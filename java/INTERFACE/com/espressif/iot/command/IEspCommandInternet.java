@@ -27,6 +27,7 @@ public interface IEspCommandInternet extends IEspCommand
     static final String Ptype = "ptype";
     
     static final String Id = "id";
+    static final String ProductId = "product_id";
     
     static final String Key = "key";
     

@@ -152,8 +152,9 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     
                     // deviceId
                     long deviceId = Long.parseLong(deviceJsonObject.getString(Id));
-                    log.debug("deviceId=" + deviceId);
-                    
+                    long productId = Long.parseLong(deviceJsonObject.getString(ProductId));
+                    log.debug("deviceId=" + deviceId + ", productId=" + productId);
+
                     // device name
                     String deviceName = deviceJsonObject.getString(Name);
                     
@@ -206,7 +207,7 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                             ptype,
                             rom_version,
                             latest_rom_version,
-                            userId);
+                            userId, productId);
                     
                     long activatedTime = deviceJsonObject.getLong(Activated_At) * TimeUtil.ONE_SECOND_LONG_VALUE;
                     device.setActivatedTime(activatedTime);

@@ -396,4 +396,8 @@ public interface IEspDevice extends IEspObject
      * @return the list of the Espnow status
      */
     List<IEspStatusEspnow> getEspnowStatusList();
+
+	long getProductId();
+
+	void setProductId(long ProductId);
 }
