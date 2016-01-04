@@ -23,6 +23,7 @@ public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostSt
         
         JSONObject params = new JSONObject();
         JSONObject dataJSON = new JSONObject();
+        String bitValues = "";
         try
         {
             List<IAperture> apertures = status.getStatusApertureList();
@@ -33,15 +34,19 @@ public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostSt
                 if (aperture.isOn())
                 {
                     value = 1 << aperture.getId();
+                    bitValues += "1";
                 }
                 else
                 {
                     value = 0;
+                    bitValues += "0";
                 }
-                
+
                 valueSum += value;
             }
             dataJSON.put(X, valueSum);
+            dataJSON.put(Y, apertures.size());
+            dataJSON.put(Z, bitValues);
             params.put(Datapoint, dataJSON);
         }
         catch (JSONException e1)

@@ -15,7 +15,7 @@ public class EspCommandPlugsPostStatusLocal implements IEspCommandPlugsPostStatu
     @Override
     public String getLocalUrl(InetAddress inetAddress)
     {
-        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=plugs";
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=switchs";
     }
     
     @Override
@@ -30,21 +30,25 @@ public class EspCommandPlugsPostStatusLocal implements IEspCommandPlugsPostStatu
         {
             List<IAperture> apertures = status.getStatusApertureList();
             int valueSum = 0;
-            for (IAperture aperture : apertures)
+            String bit_values = "";
+			for (IAperture aperture : apertures)
             {
                 int value;
                 if (aperture.isOn())
                 {
                     value = 1 << aperture.getId();
+                    bit_values += "1";
                 }
                 else
                 {
                     value = 0;
+                    bit_values += "0";
                 }
                 valueSum += value;
             }
             statusJSON.put(KEY_PLUGS_VALUE, valueSum);
             statusJSON.put(KEY_APERTURE_COUNT, apertures.size());
+            statusJSON.put(KEY_PLUGS_BIT_VALUE, bit_values);
             params.put(KEY_PLUGS_STATUS, statusJSON);
         }
         catch (JSONException e1)

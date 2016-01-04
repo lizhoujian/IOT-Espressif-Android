@@ -15,4 +15,6 @@ public interface IEspCommandPlugs extends IEspCommandDevice
     static final String KEY_PLUGS_VALUE = "plugs_value";
     
     static final String KEY_APERTURE_COUNT = "plugs_num";
+
+    static final String KEY_PLUGS_BIT_VALUE = "plugs_value_bits";
 }
