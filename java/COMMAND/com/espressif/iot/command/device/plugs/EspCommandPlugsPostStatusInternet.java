@@ -11,67 +11,88 @@ import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 import com.espressif.iot.type.net.HeaderPair;
 
-public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostStatusInternet
-{
-    
-    @Override
-    public boolean doCommandPlugsPostStatusInternet(String deviceKey, IEspStatusPlugs status)
-    {
-        String headerKey = Authorization;
-        String headerValue = Token + " " + deviceKey;
-        HeaderPair header = new HeaderPair(headerKey, headerValue);
-        
-        JSONObject params = new JSONObject();
-        JSONObject dataJSON = new JSONObject();
-        String bitValues = "";
-        try
-        {
-            List<IAperture> apertures = status.getStatusApertureList();
-            int valueSum = 0;
-            for (IAperture aperture : apertures)
-            {
-                int value;
-                if (aperture.isOn())
-                {
-                    value = 1 << aperture.getId();
-                    bitValues += "1";
-                }
-                else
-                {
-                    value = 0;
-                    bitValues += "0";
-                }
+public class EspCommandPlugsPostStatusInternet implements
+		IEspCommandPlugsPostStatusInternet {
 
-                valueSum += value;
-            }
-            dataJSON.put(X, valueSum);
-            dataJSON.put(Y, apertures.size());
-            dataJSON.put(Z, bitValues);
-            params.put(Datapoint, dataJSON);
-        }
-        catch (JSONException e1)
-        {
-            e1.printStackTrace();
-        }
-        
-        String url = URL;
-        JSONObject result = EspBaseApiUtil.Post(url, params, header);
-        if (result == null)
-        {
-            return false;
-        }
-        
-        try
-        {
-            int httpStatus = result.getInt(Status);
-            return httpStatus == HttpStatus.SC_OK;
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return false;
-    }
-    
+	private JSONObject createPlugsParams(IEspStatusPlugs status) {
+		JSONObject params = new JSONObject();
+		JSONObject dataJSON = new JSONObject();
+		String bitValues = "";
+		try {
+			List<IAperture> apertures = status.getStatusApertureList();
+			int valueSum = 0;
+			for (IAperture aperture : apertures) {
+				int value;
+				if (aperture.isOn()) {
+					value = 1 << aperture.getId();
+					bitValues += "1";
+				} else {
+					value = 0;
+					bitValues += "0";
+				}
+
+				valueSum += value;
+			}
+			dataJSON.put(X, valueSum);
+			dataJSON.put(Y, apertures.size());
+			dataJSON.put(Z, bitValues);
+			params.put(Datapoint, dataJSON);
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+		return params;
+	}
+	private JSONObject createControlParams(IEspStatusPlugs status) {
+		JSONObject params = new JSONObject();
+		JSONObject dataJSON = new JSONObject();
+		String bitValues = "";
+		try {
+			List<IAperture> apertures = status.getStatusApertureList();
+			int valueSum = 0;
+			for (IAperture aperture : apertures) {
+				int value;
+				if (aperture.isOn()) {
+					value = 1 << aperture.getId();
+					bitValues += "1";
+				} else {
+					value = 0;
+					bitValues += "0";
+				}
+
+				valueSum += value;
+			}
+			dataJSON.put(X, valueSum);
+			dataJSON.put(Y, apertures.size());
+			dataJSON.put(Z, bitValues);
+			params.put(Datapoint, dataJSON);
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+		return params;
+	}
+	@Override
+	public boolean doCommandPlugsPostStatusInternet(String deviceKey,
+			IEspStatusPlugs status) {
+		String headerKey = Authorization;
+		String headerValue = Token + " " + deviceKey;
+		HeaderPair header = new HeaderPair(headerKey, headerValue);
+
+		JSONObject params = createPlugsParams(status);
+
+		String url = URL;
+		JSONObject result = EspBaseApiUtil.Post(url, params, header);
+		if (result == null) {
+			return false;
+		}
+
+		try {
+			int httpStatus = result.getInt(Status);
+			return httpStatus == HttpStatus.SC_OK;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
 }

@@ -17,16 +17,28 @@ import com.espressif.iot.type.net.HeaderPair;
 public class EspCommandPlugsGetStatusInternet implements
 		IEspCommandPlugsGetStatusInternet {
 
-	@Override
-	public IEspStatusPlugs doCommandPlugsGetStatusInternet(String deviceKey) {
-		String headerKey = Authorization;
-		String headerValue = Token + " " + deviceKey;
-		HeaderPair header = new HeaderPair(headerKey, headerValue);
+	private IEspStatusPlugs parseControlResponse(JSONObject resultJSON) {
+		try {
+			int status = resultJSON.getInt(Status);
+			if (status != HttpStatus.SC_OK) {
+				return null;
+			}
 
-		JSONObject resultJSON = EspBaseApiUtil.Get(URL, header);
-		if (resultJSON == null) {
-			return null;
+			IEspStatusPlugs plugsStatus = new EspStatusPlugs();
+			JSONObject dataJSON = resultJSON.getJSONObject(Datapoint);
+			int run = dataJSON.getInt(Run);
+			int result = dataJSON.getInt(Result);
+			String bitValues = dataJSON.getString(Value);
+
+			plugsStatus.setValue(bitValues);
+			return plugsStatus;
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
+		return null;
+	}
+
+	private IEspStatusPlugs parsePlugsResponse(JSONObject resultJSON) {
 
 		try {
 			int status = resultJSON.getInt(Status);
@@ -63,8 +75,22 @@ public class EspCommandPlugsGetStatusInternet implements
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-
 		return null;
+	}
+
+	@Override
+	public IEspStatusPlugs doCommandPlugsGetStatusInternet(String deviceKey) {
+		String headerKey = Authorization;
+		String headerValue = Token + " " + deviceKey;
+		HeaderPair header = new HeaderPair(headerKey, headerValue);
+
+		JSONObject resultJSON = EspBaseApiUtil.Get(URL, header);
+		if (resultJSON == null) {
+			return null;
+		}
+
+		// return parsePlugsResponse(resultJSON);
+		return parseControlResponse(resultJSON);
 	}
 
 }
