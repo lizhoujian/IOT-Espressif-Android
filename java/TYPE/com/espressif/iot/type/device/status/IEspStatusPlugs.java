@@ -82,8 +82,24 @@ public interface IEspStatusPlugs extends IEspDeviceStatus {
 	 */
 	public boolean updateApertureOnOff(IAperture newAperture);
 
+	public void setResult(int result);
+
+	public int getResult();
+
 	public void setValue(String value);
 
-	public void setControlParam(int cmd, int addrType, int addr, String value,
-			int len);
+	public void setControlParam(String action, int cmd, int addrType, int addr,
+			String value, int len);
+
+	public String getAction();
+
+	public int getCmd();
+
+	public int getAddrType();
+
+	public int getAddr();
+
+	public String getValue();
+
+	public int getLen();
 }

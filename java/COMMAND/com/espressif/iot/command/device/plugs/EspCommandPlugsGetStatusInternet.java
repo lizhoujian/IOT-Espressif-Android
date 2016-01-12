@@ -13,6 +13,7 @@ import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 import com.espressif.iot.type.net.HeaderPair;
+import com.espressif.iot.ui.device.Fx2nControl;
 
 public class EspCommandPlugsGetStatusInternet implements
 		IEspCommandPlugsGetStatusInternet {
@@ -26,11 +27,12 @@ public class EspCommandPlugsGetStatusInternet implements
 
 			IEspStatusPlugs plugsStatus = new EspStatusPlugs();
 			JSONObject dataJSON = resultJSON.getJSONObject(Datapoint);
-			int run = dataJSON.getInt(Run);
-			int result = dataJSON.getInt(Result);
-			String bitValues = dataJSON.getString(Value);
+			int x = dataJSON.getInt(X);
+			int y = dataJSON.getInt(Y);
+			String z = dataJSON.getString(Z);
 
-			plugsStatus.setValue(bitValues);
+			plugsStatus.setValue(z);
+			Fx2nControl.setLastStatus(plugsStatus);
 			return plugsStatus;
 		} catch (JSONException e) {
 			e.printStackTrace();

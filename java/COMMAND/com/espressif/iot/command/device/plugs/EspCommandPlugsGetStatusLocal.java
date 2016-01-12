@@ -12,32 +12,22 @@ import com.espressif.iot.type.device.EspPlugsAperture;
 import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
+import com.espressif.iot.ui.device.Fx2nControl;
 
 public class EspCommandPlugsGetStatusLocal implements
 		IEspCommandPlugsGetStatusLocal {
 	@Override
 	public String getLocalUrl(InetAddress inetAddress) {
+		// return "http://" + inetAddress.getHostAddress() + "/"
+		// + "config?command=switchs";
 		return "http://" + inetAddress.getHostAddress() + "/"
-				+ "config?command=switchs";
+				+ "config?command=fx2n";
 	}
 
-	@Override
-	public IEspStatusPlugs doCommandPlugsGetStatusLocal(
-			InetAddress inetAddress, String deviceBssid, boolean isMeshDevice) {
-		String url = getLocalUrl(inetAddress);
-		JSONObject resultJSON = null;
-		if (deviceBssid == null || !isMeshDevice) {
-			resultJSON = EspBaseApiUtil.Get(url);
-		} else {
-			resultJSON = EspBaseApiUtil.GetForJson(url, deviceBssid);
-		}
+	private IEspStatusPlugs parsePlugsResponse(JSONObject resultJSON) {
 
-		if (resultJSON == null) {
-			return null;
-		}
-
+		IEspStatusPlugs plugsStatus = new EspStatusPlugs();
 		try {
-			IEspStatusPlugs plugsStatus = new EspStatusPlugs();
 			List<IAperture> apertures = new ArrayList<IAperture>();
 			JSONObject statusJSON = resultJSON.getJSONObject(KEY_PLUGS_STATUS);
 			int count = statusJSON.getInt(KEY_APERTURE_COUNT);
@@ -66,8 +56,45 @@ public class EspCommandPlugsGetStatusLocal implements
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		return plugsStatus;
+	}
 
-		return null;
+	private IEspStatusPlugs parseControlResponse(JSONObject resultJSON) {
+		IEspStatusPlugs plugsStatus = new EspStatusPlugs();
+		try {
+			int result = resultJSON.getInt("result");
+			if (result > 0) {
+				String value = "";
+				if (resultJSON.has("value"))
+					value = resultJSON.getString("value");
+				plugsStatus.setValue(value);
+			}
+			plugsStatus.setResult(result);
+			Fx2nControl.setLastStatus(plugsStatus);
+			return plugsStatus;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return plugsStatus;
+	}
+
+	@Override
+	public IEspStatusPlugs doCommandPlugsGetStatusLocal(
+			InetAddress inetAddress, String deviceBssid, boolean isMeshDevice) {
+		String url = getLocalUrl(inetAddress);
+		JSONObject resultJSON = null;
+		if (deviceBssid == null || !isMeshDevice) {
+			resultJSON = EspBaseApiUtil.Get(url);
+		} else {
+			resultJSON = EspBaseApiUtil.GetForJson(url, deviceBssid);
+		}
+
+		if (resultJSON == null) {
+			return null;
+		}
+
+		// return parsePlugsResponse(resultJSON);
+		return parseControlResponse(resultJSON);
 	}
 
 }

@@ -8,11 +8,14 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 
 	private boolean listControl = true;
 
+	private String action = "";
 	private int cmd = 0;
 	private int addrType = 0;
 	private int addr = 0;
 	private String value = "";
 	private int len = 0;
+
+	private int result;
 
 	public EspStatusPlugs() {
 		mApertureList = new Vector<IAperture>();
@@ -66,13 +69,47 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 	}
 
 	@Override
-	public void setControlParam(int cmd, int addrType, int addr, String value,
-			int len) {
+	public void setControlParam(String action, int cmd, int addrType, int addr,
+			String value, int len) {
 		listControl = false;
+		this.action = action;
 		this.cmd = cmd;
 		this.addrType = addrType;
 		this.addr = addr;
 		this.value = value;
 		this.len = len;
 	}
+
+	public String getAction() {
+		return this.action;
+	}
+
+	public int getCmd() {
+		return this.cmd;
+	}
+
+	public int getAddrType() {
+		return this.addrType;
+	}
+
+	public int getAddr() {
+		return this.addr;
+	}
+
+	public String getValue() {
+		return this.value;
+	}
+
+	public int getLen() {
+		return this.len;
+	}
+
+	public void setResult(int result) {
+		this.result = result;
+	}
+
+	public int getResult() {
+		return this.result;
+	}
+
 }

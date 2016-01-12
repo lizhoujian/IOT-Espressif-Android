@@ -48,6 +48,7 @@ public interface IEspCommandInternet extends IEspCommand {
 	static final String K = "k";
 
 	static final String L = "l";
+	static final String H = "h";
 
 	static final String Name = "name";
 

@@ -181,8 +181,10 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 		int bitAddr = Integer.parseInt(txtBitAddr.getText().toString());
 		int bitValue = bitSetValue;
 		IEspStatusPlugs status = new EspStatusPlugs();
-		status.setControlParam(bitSetValue > 0 ? Fx2nControl.CMD_FORCE_ON
-				: Fx2nControl.CMD_FORCE_OFF, bitAddrType, bitAddr, "", 0);
+		status.setControlParam("control",
+				bitSetValue > 0 ? Fx2nControl.CMD_FORCE_ON
+						: Fx2nControl.CMD_FORCE_OFF, bitAddrType, bitAddr, "",
+				0);
 		executePost(status);
 	}
 
@@ -192,10 +194,13 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 		int byteLen = addrTypeValueLen[byteAddrType];
 		int byteWriteValue = Integer.parseInt(txtByteWriteValue.getText()
 				.toString());
-		String hexString = Fx2nControl.toHexString(byteWriteValue, byteLen);
+		String hexString = "";
+		if (readWrite > 0) {
+			Fx2nControl.toHexString(byteWriteValue, byteLen);
+		}
 
 		IEspStatusPlugs status = new EspStatusPlugs();
-		status.setControlParam(readWrite > 0 ? Fx2nControl.CMD_WRITE
+		status.setControlParam("control", readWrite > 0 ? Fx2nControl.CMD_WRITE
 				: Fx2nControl.CMD_READ, byteAddrType, byteAddr, hexString,
 				byteLen);
 		executePost(status);
@@ -212,6 +217,8 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 		if (command == COMMAND_GET && !result) {
 			Toast.makeText(this, R.string.esp_device_plugs_get_status_failed,
 					Toast.LENGTH_LONG).show();
+		} else if (result && Fx2nControl.getLastStatus().getResult() > 0) {
+			txtByteReadValue.setText(Fx2nControl.getLastStatus().getValue());
 		}
 
 		checkHelpExecuteFinish(command, result);

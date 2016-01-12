@@ -1,6 +1,11 @@
 package com.espressif.iot.ui.device;
 
-public class Fx2nControl {
+import java.util.Locale;
+
+import com.espressif.iot.type.device.status.EspStatusPlugs;
+import com.espressif.iot.type.device.status.IEspStatusPlugs;
+
+public final class Fx2nControl {
 	public final static int REG_D = 0;
 	public final static int REG_M = 1;
 	public final static int REG_T = 2;
@@ -25,10 +30,20 @@ public class Fx2nControl {
 	public final static int CMD_READ = 0;
 	public final static int CMD_WRITE = 0;
 
-	public static byte[] int2Bytes(int value, int len) {
+	public static IEspStatusPlugs lastStatus = null;
+
+	public final static void setLastStatus(IEspStatusPlugs status) {
+		lastStatus = status;
+	}
+
+	public final static IEspStatusPlugs getLastStatus() {
+		return lastStatus;
+	}
+
+	private final static byte[] int2Bytes(int value, int len) {
 		byte[] b = new byte[len];
 		for (int i = 0; i < len; i++) {
-			b[len - i - 1] = (byte) ((value >> 8 * i) & 0xff);
+			b[i] = (byte) ((value >> 8 * i) & 0xff);
 		}
 		return b;
 	}
@@ -46,5 +61,30 @@ public class Fx2nControl {
 			ret += tmp;
 		}
 		return ret;
+	}
+
+	public final static int hexStringToInt(String hexString) {
+		byte[] bytes = hexStringToBytes(hexString);
+		int i;
+		int ret = 0;
+		if (bytes != null) {
+			for (i = 0; i < bytes.length; i++) {
+				ret += (bytes[i] << i * 8);
+			}
+		}
+		return ret;
+	}
+
+	private final static byte[] hexStringToBytes(String hexString) {
+		if (hexString == null || hexString.equals("")) {
+			return null;
+		}
+		int length = hexString.length() / 2;
+		byte[] d = new byte[length];
+		for (int i = 0; i < length; i++) {
+			int pos = i * 2;
+			d[i] = Byte.decode("0x" + hexString.substring(pos, pos + 2));
+		}
+		return d;
 	}
 }
