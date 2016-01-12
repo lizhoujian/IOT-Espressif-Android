@@ -92,8 +92,8 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 		mApertureListView.setAdapter(mApertureAdapter);
 		mApertureListView.setOnItemClickListener(this);
 
-		txtBitAddrType = (TextView) findViewById(R.id.txtBitAddrType);
-		btnBitAddrType = (Button) findViewById(R.id.btnBitAddrType);
+		txtBitAddrType = (TextView) view.findViewById(R.id.txtBitAddrType);
+		btnBitAddrType = (Button) view.findViewById(R.id.btnBitAddrType);
 		btnBitAddrType.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -113,8 +113,8 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 				builder.show();
 			}
 		});
-		txtBitAddr = (EditText) findViewById(R.id.txtBitAddr);
-		radioSet = (RadioGroup) findViewById(R.id.radioBitSet);
+		txtBitAddr = (EditText) view.findViewById(R.id.txtBitAddr);
+		radioSet = (RadioGroup) view.findViewById(R.id.radioBitSet);
 		radioSet.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -125,7 +125,7 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 				}
 			}
 		});
-		btnBitExec = (Button) findViewById(R.id.btnBitExec);
+		btnBitExec = (Button) view.findViewById(R.id.btnBitExec);
 		btnBitExec.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -133,8 +133,8 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 			}
 		});
 
-		txtByteAddrType = (TextView) findViewById(R.id.txtByteAddrType);
-		btnByteAddrType = (Button) findViewById(R.id.btnByteAddrType);
+		txtByteAddrType = (TextView) view.findViewById(R.id.txtByteAddrType);
+		btnByteAddrType = (Button) view.findViewById(R.id.btnByteAddrType);
 		btnByteAddrType.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -155,17 +155,17 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 			}
 		});
 
-		txtByteAddr = (EditText) findViewById(R.id.txtByteAddr);
-		txtByteWriteValue = (TextView) findViewById(R.id.txtByteWriteValue);
-		txtByteReadValue = (TextView) findViewById(R.id.txtByteReadValue);
-		btnByteReadExec = (Button) findViewById(R.id.btnByteReadExec);
+		txtByteAddr = (EditText) view.findViewById(R.id.txtByteAddr);
+		txtByteWriteValue = (TextView) view.findViewById(R.id.txtByteWriteValue);
+		txtByteReadValue = (TextView) view.findViewById(R.id.txtByteReadValue);
+		btnByteReadExec = (Button) view.findViewById(R.id.btnByteReadExec);
 		btnByteReadExec.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				executeByteControl(0);
 			}
 		});
-		btnByteWriteExec = (Button) findViewById(R.id.btnByteWriteExec);
+		btnByteWriteExec = (Button) view.findViewById(R.id.btnByteWriteExec);
 		btnByteWriteExec.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {

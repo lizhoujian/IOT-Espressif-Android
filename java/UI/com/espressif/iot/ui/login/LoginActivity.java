@@ -71,6 +71,9 @@ public class LoginActivity extends Activity implements OnClickListener
         mEmailEdt = (EditText)findViewById(R.id.login_edt_account);
         mPasswordEdt = (EditText)findViewById(R.id.login_edt_password);
         
+        mEmailEdt.setText("lizhoujian123@163.com");
+        mPasswordEdt.setText("loveyan2010");
+        
         mLoginBtn = (Button)findViewById(R.id.login_btn_login);
         mLoginBtn.setOnClickListener(this);
         
