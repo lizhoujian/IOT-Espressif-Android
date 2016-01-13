@@ -92,7 +92,7 @@ public class EspCommandPlugsPostStatusLocal implements
 			IEspStatusPlugs status, String deviceBssid, boolean isMeshDevice) {
 		String url = getLocalUrl(inetAddress);
 
-		JSONObject params = createPlugsRequest(status);
+		JSONObject params = createControlRequest(status);
 
 		JSONObject result;
 		if (deviceBssid == null || !isMeshDevice) {
