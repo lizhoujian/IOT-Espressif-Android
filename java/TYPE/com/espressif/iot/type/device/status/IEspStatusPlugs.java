@@ -91,6 +91,7 @@ public interface IEspStatusPlugs extends IEspDeviceStatus {
 	public void setControlParam(String action, int cmd, int addrType, int addr,
 			String value, int len);
 
+	public void setAction(String v);
 	public String getAction();
 
 	public int getCmd();
@@ -102,4 +103,6 @@ public interface IEspStatusPlugs extends IEspDeviceStatus {
 	public String getValue();
 
 	public int getLen();
+
+	public void setCmd(int i);
 }

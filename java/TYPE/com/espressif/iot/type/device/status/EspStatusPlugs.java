@@ -112,4 +112,14 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 		return this.result;
 	}
 
+	@Override
+	public void setAction(String v) {
+		this.action = v;
+	}
+
+	@Override
+	public void setCmd(int i) {
+		this.cmd = i;
+	}
+
 }

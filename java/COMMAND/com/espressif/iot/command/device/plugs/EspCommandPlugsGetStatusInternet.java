@@ -29,8 +29,12 @@ public class EspCommandPlugsGetStatusInternet implements
 			JSONObject dataJSON = resultJSON.getJSONObject(Datapoint);
 			int x = dataJSON.getInt(X);
 			int y = dataJSON.getInt(Y);
-			String z = dataJSON.getString(Z);
+			String z = "";
+			if (dataJSON.has(Z)) {
+				z = dataJSON.getString(Z);
+			}
 
+			plugsStatus.setResult(y);
 			plugsStatus.setValue(z);
 			Fx2nControl.setLastStatus(plugsStatus);
 			return plugsStatus;

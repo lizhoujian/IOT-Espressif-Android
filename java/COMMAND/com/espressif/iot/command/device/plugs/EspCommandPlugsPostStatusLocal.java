@@ -16,16 +16,17 @@ public class EspCommandPlugsPostStatusLocal implements
 		IEspCommandPlugsPostStatusLocal {
 	@Override
 	public String getLocalUrl(InetAddress inetAddress) {
-//		return "http://" + inetAddress.getHostAddress() + "/"
-//				+ "config?command=switchs";
+		// return "http://" + inetAddress.getHostAddress() + "/"
+		// + "config?command=switchs";
 		return "http://" + inetAddress.getHostAddress() + "/"
-		+ "config?command=fx2n";
+				+ "config?command=fx2n";
 	}
 
 	private JSONObject createControlRequest(IEspStatusPlugs status) {
 		JSONObject params = new JSONObject();
 		JSONObject statusJSON = new JSONObject();
 		try {
+			statusJSON.put("action", status.getAction());
 			statusJSON.put("cmd", status.getCmd());
 			statusJSON.put("addr_type", status.getAddrType());
 			statusJSON.put("addr", status.getAddr());
@@ -67,8 +68,9 @@ public class EspCommandPlugsPostStatusLocal implements
 		return params;
 	}
 
-	private void parseControlResponse(IEspStatusPlugs status,
+	private void parseControlResponse(IEspStatusPlugs oldstatus,
 			JSONObject resultJSON) {
+		EspStatusPlugs status = new EspStatusPlugs();
 		try {
 			int result = resultJSON.getInt("result");
 			if (result > 0) {
@@ -77,6 +79,7 @@ public class EspCommandPlugsPostStatusLocal implements
 					value = resultJSON.getString("value");
 				status.setValue(value);
 			}
+			status.setCmd(oldstatus.getCmd());
 			status.setResult(result);
 			Fx2nControl.setLastStatus(status);
 		} catch (JSONException e) {

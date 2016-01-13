@@ -9,6 +9,7 @@ package com.espressif.iot.command.device;
 public interface IEspCommandPlugs extends IEspCommandDevice
 {
     static final String URL = "https://iot.espressif.cn/v1/datastreams/plugs/datapoint/?deliver_to_device=true";
+    static final String URL_RPC = "https://iot.espressif.cn/v1/device/rpc/?deliver_to_device=true";
     
     static final String KEY_PLUGS_STATUS = "plugs_status";
     

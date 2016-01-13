@@ -2,6 +2,8 @@ package com.espressif.iot.ui.device;
 
 import java.util.Locale;
 
+import android.os.Handler;
+
 import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 
@@ -28,12 +30,47 @@ public final class Fx2nControl {
 	public final static int CMD_FORCE_ON = 7;
 	public final static int CMD_FORCE_OFF = 8;
 	public final static int CMD_READ = 0;
-	public final static int CMD_WRITE = 0;
+	public final static int CMD_WRITE = 1;
+
+	public final static int REQUEST_CONTROL = 10;
+	public final static int REQUEST_LAN_IP = 11;
+	public final static int REQUEST_SERIAL_SWITCH = 12;
+	public final static int REQUEST_PLC_RUN_STOP = 13;
 
 	public static IEspStatusPlugs lastStatus = null;
 
+	public static Handler handler = null;
+
+	public final static void setHandler(Handler handler) {
+		Fx2nControl.handler = handler;
+	}
+
 	public final static void setLastStatus(IEspStatusPlugs status) {
 		lastStatus = status;
+		if (handler != null) {
+			String action = status.getAction();
+			if (action != null) {
+				if (action.equalsIgnoreCase("control")
+						&& status.getCmd() == CMD_READ
+						&& status.getResult() > 0) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_CONTROL, status.getValue()));
+				} else if (action.equalsIgnoreCase("lan_ip")) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_LAN_IP, status.getValue()));
+				} else if (action.equalsIgnoreCase("serial_switch_set")
+						|| action.equalsIgnoreCase("serial_switch_get")) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_SERIAL_SWITCH,
+							status.getResult(), 0));
+				} else if (action.equalsIgnoreCase("plc_run_stop_set")
+						|| action.equalsIgnoreCase("plc_run_stop_get")) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_PLC_RUN_STOP,
+							status.getResult(), 0));
+				}
+			}
+		}
 	}
 
 	public final static IEspStatusPlugs getLastStatus() {

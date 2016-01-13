@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 import com.espressif.iot.type.net.HeaderPair;
@@ -61,18 +62,32 @@ public class EspCommandPlugsPostStatusInternet implements
 		return params;
 	}
 
-	private void setControlResponse(IEspStatusPlugs status, JSONObject result) {
+	private String createControlParams2(IEspStatusPlugs status) {
+		String ret;
+		ret = "&action=" + status.getAction();
+		ret += "&" + X + "=" + status.getCmd();
+		ret += "&" + Y + "=" + status.getAddrType();
+		ret += "&" + Z + "=" + status.getAddr();
+		ret += "&" + L + "=" + status.getLen();
+		ret += "&" + K + "=" + status.getValue();
+		return ret;
+	}
+
+	private void setControlResponse(IEspStatusPlugs oldstatus, JSONObject result) {
+		EspStatusPlugs status = new EspStatusPlugs();
 		JSONObject dataJSON;
 		try {
 			dataJSON = result.getJSONObject(Datapoint);
 			int x = dataJSON.getInt(X);
 			int y = dataJSON.getInt(Y);
 			String z = "";
-			if (result.has(Z)) {
-				dataJSON.getString(Z);
+			if (dataJSON.has(Z)) {
+				z = dataJSON.getString(Z);
 			}
 			status.setResult(y);
 			status.setValue(z);
+			status.setAction(oldstatus.getAction());
+			status.setCmd(oldstatus.getCmd());
 			Fx2nControl.setLastStatus(status);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -80,16 +95,38 @@ public class EspCommandPlugsPostStatusInternet implements
 		}
 	}
 
-	@Override
-	public boolean doCommandPlugsPostStatusInternet(String deviceKey,
-			IEspStatusPlugs status) {
+	private boolean controlPost(String deviceKey, IEspStatusPlugs status) {
+		String headerKey = Authorization;
+		String headerValue = Token + " " + deviceKey;
+		HeaderPair header = new HeaderPair(headerKey, headerValue);
+
+		String params = createControlParams2(status);
+
+		String url = URL_RPC;
+		JSONObject result = EspBaseApiUtil.Get(url + params, header);
+		if (result == null) {
+			return false;
+		}
+
+		try {
+			int httpStatus = result.getInt(Status);
+			setControlResponse(status, result);
+			return httpStatus == HttpStatus.SC_OK;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
+	private boolean plugsPost(String deviceKey, IEspStatusPlugs status) {
 		String headerKey = Authorization;
 		String headerValue = Token + " " + deviceKey;
 		HeaderPair header = new HeaderPair(headerKey, headerValue);
 
 		JSONObject params = createPlugsParams(status);
 
-		String url = URL;
+		String url = URL_RPC;
 		JSONObject result = EspBaseApiUtil.Post(url, params, header);
 		if (result == null) {
 			return false;
@@ -106,4 +143,10 @@ public class EspCommandPlugsPostStatusInternet implements
 		return false;
 	}
 
+	@Override
+	public boolean doCommandPlugsPostStatusInternet(String deviceKey,
+			IEspStatusPlugs status) {
+		// return plugsPost(deviceKey, status);
+		return controlPost(deviceKey, status);
+	}
 }

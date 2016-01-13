@@ -14,6 +14,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -70,6 +72,18 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 	private EditText txtBitAddr;
 	private EditText txtByteAddr;
 
+	private int byteLen;
+
+	private Handler myHandler;
+
+	private Button btnSerialSwitch;
+	private Button btnRunStop;
+	private Button btnLanIP;
+	private TextView txtMsg;
+
+	private boolean serialSwitchStatus = false;
+	private boolean runStopStatus = false;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -106,7 +120,7 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								bitAddrTypeValue = which;
+								bitAddrTypeValue = addrTypeValues[which];
 								txtBitAddrType.setText(addrTypeitems[which]);
 							}
 						});
@@ -147,7 +161,8 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								byteAddrTypeValue = which;
+								byteAddrTypeValue = addrTypeValues[which];
+								byteLen = addrTypeValueLen[which];
 								txtByteAddrType.setText(addrTypeitems[which]);
 							}
 						});
@@ -156,7 +171,8 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 		});
 
 		txtByteAddr = (EditText) view.findViewById(R.id.txtByteAddr);
-		txtByteWriteValue = (TextView) view.findViewById(R.id.txtByteWriteValue);
+		txtByteWriteValue = (TextView) view
+				.findViewById(R.id.txtByteWriteValue);
 		txtByteReadValue = (TextView) view.findViewById(R.id.txtByteReadValue);
 		btnByteReadExec = (Button) view.findViewById(R.id.btnByteReadExec);
 		btnByteReadExec.setOnClickListener(new OnClickListener() {
@@ -173,16 +189,91 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 			}
 		});
 
+		btnSerialSwitch = (Button) view.findViewById(R.id.btnSerialSwitch);
+		btnSerialSwitch.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				executeSerialSwitch(serialSwitchStatus ? 0 : 1);
+			}
+		});
+		btnRunStop = (Button) view.findViewById(R.id.btnRunStop);
+		btnRunStop.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				executeRunStop(runStopStatus ? 0 : 1);
+			}
+		});
+		btnLanIP = (Button) view.findViewById(R.id.btnLanIP);
+		btnLanIP.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				exeucteGetLanIP();
+			}
+		});
+
+		txtMsg = (TextView) view.findViewById(R.id.txtMsg);
+		txtMsg.setText("");
+
+		myHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case Fx2nControl.REQUEST_CONTROL:
+					txtByteReadValue.setText((String) msg.obj);
+					break;
+				case Fx2nControl.REQUEST_LAN_IP:
+					txtMsg.setText((String) msg.obj);
+					break;
+				case Fx2nControl.REQUEST_SERIAL_SWITCH:
+					serialSwitchStatus = msg.arg1 == 1;
+					if (serialSwitchStatus) {
+						txtMsg.setText("PLC串口已连接到WIFI");
+						btnSerialSwitch.setText("PLC连接PC");
+					} else {
+						txtMsg.setText("PLC串口已连接到PC");
+						btnSerialSwitch.setText("PLC连接WIFI");
+					}
+					break;
+				case Fx2nControl.REQUEST_PLC_RUN_STOP:
+					runStopStatus = msg.arg1 == 1;
+					if (runStopStatus) {
+						txtMsg.setText("PLC正常运行");
+						btnRunStop.setText("PLC停步");
+					} else {
+						txtMsg.setText("PLC停步运行");
+						btnRunStop.setText("PLC运行");
+					}
+					break;
+				}
+				super.handleMessage(msg);
+			}
+		};
+
+		Fx2nControl.setHandler(myHandler);
+		myHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				executeSerialSwitchGet();
+				executeRunStopGet();
+			}
+		}, 200);
+
 		return view;
 	}
 
 	private void executeBitControl() {
 		int bitAddrType = bitAddrTypeValue;
-		int bitAddr = Integer.parseInt(txtBitAddr.getText().toString());
+		int bitAddr = 0;
 		int bitValue = bitSetValue;
 		IEspStatusPlugs status = new EspStatusPlugs();
+		txtMsg.setText("");
+		try {
+			if (!txtBitAddr.getText().toString().trim().isEmpty()) {
+				bitAddr = Integer.parseInt(txtBitAddr.getText().toString());
+			}
+		} catch (Exception e) {
+		}
 		status.setControlParam("control",
-				bitSetValue > 0 ? Fx2nControl.CMD_FORCE_ON
+				bitValue > 0 ? Fx2nControl.CMD_FORCE_ON
 						: Fx2nControl.CMD_FORCE_OFF, bitAddrType, bitAddr, "",
 				0);
 		executePost(status);
@@ -190,19 +281,70 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 
 	private void executeByteControl(int readWrite) {
 		int byteAddrType = byteAddrTypeValue;
-		int byteAddr = Integer.parseInt(txtByteAddr.getText().toString());
-		int byteLen = addrTypeValueLen[byteAddrType];
-		int byteWriteValue = Integer.parseInt(txtByteWriteValue.getText()
-				.toString());
+		int byteAddr = 0;
+		int byteWriteValue = 0;
+
+		txtMsg.setText("");
+		try {
+			if (!txtByteAddr.getText().toString().trim().isEmpty()) {
+				byteAddr = Integer.parseInt(txtByteAddr.getText().toString());
+			} else {
+				byteAddr = 0;
+			}
+			if (!txtByteWriteValue.getText().toString().trim().isEmpty()) {
+				byteWriteValue = Integer.parseInt(txtByteWriteValue.getText()
+						.toString());
+			} else {
+				byteWriteValue = 0;
+			}
+		} catch (Exception e) {
+		}
 		String hexString = "";
 		if (readWrite > 0) {
-			Fx2nControl.toHexString(byteWriteValue, byteLen);
+			hexString = Fx2nControl.toHexString(byteWriteValue, byteLen);
 		}
 
 		IEspStatusPlugs status = new EspStatusPlugs();
 		status.setControlParam("control", readWrite > 0 ? Fx2nControl.CMD_WRITE
 				: Fx2nControl.CMD_READ, byteAddrType, byteAddr, hexString,
 				byteLen);
+		executePost(status);
+	}
+
+	private void executeRunStopGet() {
+		txtMsg.setText("");
+		IEspStatusPlugs status = new EspStatusPlugs();
+		status.setAction("plc_run_stop_get");
+		executePost(status);
+	}
+
+	private void executeRunStop(int onoff) {
+		txtMsg.setText("");
+		IEspStatusPlugs status = new EspStatusPlugs();
+		status.setAction("plc_run_stop_set");
+		status.setCmd(onoff);
+		executePost(status);
+	}
+
+	private void executeSerialSwitch(int onoff) {
+		txtMsg.setText("");
+		IEspStatusPlugs status = new EspStatusPlugs();
+		status.setAction("serial_switch_set");
+		status.setCmd(onoff);
+		executePost(status);
+	}
+
+	private void executeSerialSwitchGet() {
+		txtMsg.setText("");
+		IEspStatusPlugs status = new EspStatusPlugs();
+		status.setAction("serial_switch_get");
+		executePost(status);
+	}
+
+	private void exeucteGetLanIP() {
+		txtMsg.setText("");
+		IEspStatusPlugs status = new EspStatusPlugs();
+		status.setAction("lan_ip");
 		executePost(status);
 	}
 
@@ -218,7 +360,7 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements
 			Toast.makeText(this, R.string.esp_device_plugs_get_status_failed,
 					Toast.LENGTH_LONG).show();
 		} else if (result && Fx2nControl.getLastStatus().getResult() > 0) {
-			txtByteReadValue.setText(Fx2nControl.getLastStatus().getValue());
+
 		}
 
 		checkHelpExecuteFinish(command, result);

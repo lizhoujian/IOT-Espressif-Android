@@ -12,10 +12,9 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:layout_weight="0.45"
         android:background="@drawable/linearlayout_boder"
         android:orientation="vertical"
         android:paddingTop="5dp" >
@@ -29,12 +28,12 @@
         <Button
             android:id="@+id/button1"
             android:layout_width="match_parent"
-            android:layout_height="10px"
+            android:layout_height="5dp"
             android:text="" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView5"
@@ -53,19 +52,22 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:gravity="right" >
 
                 <Button
                     android:id="@+id/btnBitAddrType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:text="选择类型" />
+
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView4"
@@ -78,6 +80,7 @@
                 android:id="@+id/txtBitAddr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:ems="10" >
 
@@ -87,7 +90,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView6"
@@ -99,25 +102,33 @@
             <RadioGroup
                 android:id="@+id/radioBitSet"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="left"
+                android:orientation="horizontal" >
 
                 <RadioButton
                     android:id="@+id/radioBitSetValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:checked="true"
                     android:text="置位" />
 
                 <RadioButton
                     android:id="@+id/radioBitResetValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/radioBitSetValue"
+                    android:layout_marginLeft="10dp"
                     android:text="复位" />
+
             </RadioGroup>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:gravity="right" >
 
             <Button
@@ -130,8 +141,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.5"
+        android:layout_height="wrap_content"
         android:background="@drawable/linearlayout_boder"
         android:orientation="vertical"
         android:paddingTop="5dp" >
@@ -145,11 +155,11 @@
         <Button
             android:id="@+id/Button01"
             android:layout_width="match_parent"
-            android:layout_height="10px" />
+            android:layout_height="5dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView7"
@@ -168,6 +178,7 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:gravity="right" >
 
                 <Button
@@ -180,7 +191,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView9"
@@ -193,6 +204,7 @@
                 android:id="@+id/txtByteAddr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:ems="10" >
 
@@ -202,7 +214,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView10"
@@ -222,7 +234,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px" >
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/textView11"
@@ -242,20 +254,66 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60px"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="right|center_vertical" >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="left|center_vertical"
+                android:layout_weight="0.74"
+                android:gravity="left"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/txtMsg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="right|center_vertical" >
+
+                <Button
+                    android:id="@+id/btnByteReadExec"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="执行读" />
+
+                <Button
+                    android:id="@+id/btnByteWriteExec"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="执行写" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="right" >
 
             <Button
-                android:id="@+id/btnByteReadExec"
+                android:id="@+id/btnSerialSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="执行读" />
+                android:text="PLC串口连接PC" />
 
             <Button
-                android:id="@+id/btnByteWriteExec"
+                android:id="@+id/btnRunStop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="执行写" />
+                android:text="PLC已启动" />
+            <Button
+                android:id="@+id/btnLanIP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="局域网IP" />
         </LinearLayout>
     </LinearLayout>
 

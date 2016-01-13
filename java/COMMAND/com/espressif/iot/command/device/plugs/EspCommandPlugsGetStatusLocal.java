@@ -96,5 +96,4 @@ public class EspCommandPlugsGetStatusLocal implements
 		// return parsePlugsResponse(resultJSON);
 		return parseControlResponse(resultJSON);
 	}
-
 }
