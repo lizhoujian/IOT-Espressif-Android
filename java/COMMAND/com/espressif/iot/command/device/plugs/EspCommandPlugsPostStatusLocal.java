@@ -24,12 +24,11 @@ public class EspCommandPlugsPostStatusLocal implements
 
 	private JSONObject createControlRequest(IEspStatusPlugs status) {
 		JSONObject params = new JSONObject();
-		JSONObject statusJSON = new JSONObject();
 		try {
-			statusJSON.put("action", status.getAction());
-			statusJSON.put("cmd", status.getCmd());
-			statusJSON.put("addr_type", status.getAddrType());
-			statusJSON.put("addr", status.getAddr());
+			params.put("action", status.getAction());
+			params.put("cmd", status.getCmd());
+			params.put("addr_type", status.getAddrType());
+			params.put("addr", status.getAddr());
 			params.put("len", status.getLen());
 			if (status.getValue() != null && status.getValue().trim() != "") {
 				params.put("value", status.getValue());
@@ -81,6 +80,7 @@ public class EspCommandPlugsPostStatusLocal implements
 			}
 			status.setCmd(oldstatus.getCmd());
 			status.setResult(result);
+			status.setAction(oldstatus.getAction());
 			Fx2nControl.setLastStatus(status);
 		} catch (JSONException e) {
 			e.printStackTrace();
