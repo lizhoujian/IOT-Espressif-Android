@@ -16,6 +16,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -31,7 +32,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public abstract class EspActivityAbs extends Activity implements IEspHelpUI
+public abstract class EspActivityAbs extends FragmentActivity implements IEspHelpUI
 {
     private FrameLayout mContentView;
     

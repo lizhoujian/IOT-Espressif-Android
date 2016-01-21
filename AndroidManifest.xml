@@ -95,6 +95,9 @@
             android:name="com.espressif.iot.ui.device.DevicePlugsActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name="com.espressif.iot.ui.device.DevicePlugsActivityTabs"
+            android:screenOrientation="portrait" />
+        <activity
             android:name="com.espressif.iot.ui.device.DeviceRootRouterActivity"
             android:screenOrientation="portrait" />
         <activity

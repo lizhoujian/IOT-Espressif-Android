@@ -36,6 +36,15 @@ public final class Fx2nControl {
 	public final static int REQUEST_LAN_IP = 11;
 	public final static int REQUEST_SERIAL_SWITCH = 12;
 	public final static int REQUEST_PLC_RUN_STOP = 13;
+	public final static String[] addrTypeitems = { "X", "Y", "S", "T", "C",
+			"D", "D*", "M", "M*", "TV16", "CV16", "CV32" };
+	public final static int[] addrTypeValues = { Fx2nControl.REG_X,
+			Fx2nControl.REG_Y, Fx2nControl.REG_S, Fx2nControl.REG_T,
+			Fx2nControl.REG_C, Fx2nControl.REG_D, Fx2nControl.REG_DS,
+			Fx2nControl.REG_M, Fx2nControl.REG_MS, Fx2nControl.REG_TV16,
+			Fx2nControl.REG_CV16, Fx2nControl.REG_CV32 };
+	public final static int[] addrTypeValueLen = { 1, 1, 1, 1, 1, 2, 2, 1, 1,
+			2, 2, 4 };
 
 	public static IEspStatusPlugs lastStatus = null;
 

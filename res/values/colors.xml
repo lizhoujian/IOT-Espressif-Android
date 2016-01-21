@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <color name="esp_actionbar_color">#ff36bfdc</color>
-    
     <color name="esp_text_hint_color">#dddddd</color>
-    
     <color name="esp_qrcode_viewfinder_mask">#60000000</color>
     <color name="esp_qrcode_viewfinder_frame">#ff000000</color>
     <color name="esp_qrcode_viewfinder_laser">#ffff0000</color>
     <color name="esp_qrcode_result_view">#b0000000</color>
     <color name="esp_qrcode_possible_result_points">#c0ffff00</color>
-    
     <color name="esp_help_frame_background_dark">#99000000</color>
     <color name="esp_help_hint_message_frame_bg">#55000000</color>
-    
     <color name="esp_scene_move_view_background">#80ffffff</color>
     <color name="esp_scene_background_intersects">#70000000</color>
     <color name="esp_scene_background_selected">#40000000</color>
     <color name="esp_scene_fragment_background">#f9ffffff</color>
-    
     <color name="esp_preference_category_title">#ee36bfdc</color>
+    <color name="tab_main_text_1">#aaa</color>
+    <color name="tab_main_text_2">#74b5f7</color>
+    <color name="tab_top_text_1">#aaa</color>
+    <color name="tab_top_text_2">#000</color>
+    <color name="tab_top2_text_1">#000</color>
+    <color name="tab_top2_text_2">#fff</color>
+    <color name="white">#fff</color>
+
 </resources>

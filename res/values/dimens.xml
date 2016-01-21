@@ -13,18 +13,20 @@
     <dimen name="indicator_internal_padding">4dp</dimen>
     <dimen name="header_footer_left_right_padding">24dp</dimen>
     <dimen name="header_footer_top_bottom_padding">12dp</dimen>
-
     <dimen name="esp_bottom_bar_height">65dip</dimen>
     <dimen name="esp_bottom_item_padding">3dip</dimen>
     <dimen name="esp_bottom_item_width">68dip</dimen>
     <dimen name="esp_bottom_item_height">65dip</dimen>
     <dimen name="esp_activity_title_min_height">50dip</dimen>
-
     <dimen name="esp_activity_ui_progress_padding">5dip</dimen>
-
     <dimen name="esp_treeview_icon_base_padding">15dip</dimen>
     <dimen name="esp_treeview_icon_vertical_padding">10dip</dimen>
     <dimen name="esp_treeview_text_size">20sp</dimen>
-
     <dimen name="esp_light_frgb_edit_width">65dip</dimen>
+
+    <!-- slidemenu -->
+    <dimen name="ap_base_menu_shadow_offset">80dp</dimen>
+    <dimen name="ap_base_menu_shadow_width">16dp</dimen>
+    <dimen name="tab_top_fontsize">15sp</dimen>
+
 </resources>

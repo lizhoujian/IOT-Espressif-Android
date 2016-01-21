@@ -768,7 +768,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             case PLUGS:
                 if (state.isStateInternet() || state.isStateLocal())
                 {
-                    _class = helpOn ? DevicePlugsActivity.class : HelpDevicePlugsActivity.class;
+                    _class = helpOn ? DevicePlugsActivityTabs.class : HelpDevicePlugsActivity.class;
                 }
                 break;
             case ROOT:
