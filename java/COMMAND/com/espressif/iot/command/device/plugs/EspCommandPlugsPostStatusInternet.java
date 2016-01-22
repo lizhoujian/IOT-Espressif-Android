@@ -88,6 +88,8 @@ public class EspCommandPlugsPostStatusInternet implements
 			status.setValue(z);
 			status.setAction(oldstatus.getAction());
 			status.setCmd(oldstatus.getCmd());
+			status.setAddrType(oldstatus.getAddrType());
+			status.setHandler(oldstatus.getHandler());
 			Fx2nControl.setLastStatus(status);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

@@ -2,6 +2,8 @@ package com.espressif.iot.type.device.status;
 
 import java.util.List;
 
+import android.os.Handler;
+
 import com.espressif.iot.type.device.IEspDeviceStatus;
 
 public interface IEspStatusPlugs extends IEspDeviceStatus {
@@ -92,11 +94,14 @@ public interface IEspStatusPlugs extends IEspDeviceStatus {
 			String value, int len);
 
 	public void setAction(String v);
+
 	public String getAction();
 
 	public int getCmd();
 
 	public int getAddrType();
+
+	public void setAddrType(int addrType);
 
 	public int getAddr();
 
@@ -105,4 +110,8 @@ public interface IEspStatusPlugs extends IEspDeviceStatus {
 	public int getLen();
 
 	public void setCmd(int i);
+
+	public void setHandler(Handler handler);
+
+	public Handler getHandler();
 }

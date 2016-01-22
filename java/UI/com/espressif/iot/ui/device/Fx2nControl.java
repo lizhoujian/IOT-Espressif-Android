@@ -36,6 +36,7 @@ public final class Fx2nControl {
 	public final static int REQUEST_LAN_IP = 11;
 	public final static int REQUEST_SERIAL_SWITCH = 12;
 	public final static int REQUEST_PLC_RUN_STOP = 13;
+	public final static int REQUEST_PLC_REGISTER_COUNT = 14;
 	public final static String[] addrTypeitems = { "X", "Y", "S", "T", "C",
 			"D", "D*", "M", "M*", "TV16", "CV16", "CV32" };
 	public final static int[] addrTypeValues = { Fx2nControl.REG_X,
@@ -48,14 +49,19 @@ public final class Fx2nControl {
 
 	public static IEspStatusPlugs lastStatus = null;
 
-	public static Handler handler = null;
+	public static Handler mHandler = null;
 
 	public final static void setHandler(Handler handler) {
-		Fx2nControl.handler = handler;
+		Fx2nControl.mHandler = handler;
 	}
 
 	public final static void setLastStatus(IEspStatusPlugs status) {
 		lastStatus = status;
+		Handler handler = null;
+		handler = status.getHandler();
+		if (handler == null && mHandler != null) {
+			handler = mHandler;
+		}
 		if (handler != null) {
 			String action = status.getAction();
 			if (action != null) {
@@ -77,6 +83,10 @@ public final class Fx2nControl {
 					handler.sendMessage(handler.obtainMessage(
 							Fx2nControl.REQUEST_PLC_RUN_STOP,
 							status.getResult(), 0));
+				} else if (action.equalsIgnoreCase("register_count")) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_PLC_REGISTER_COUNT,
+							status.getValue()));
 				}
 			}
 		}
@@ -86,7 +96,7 @@ public final class Fx2nControl {
 		return lastStatus;
 	}
 
-	private final static byte[] int2Bytes(int value, int len) {
+	public final static byte[] int2Bytes(int value, int len) {
 		byte[] b = new byte[len];
 		for (int i = 0; i < len; i++) {
 			b[i] = (byte) ((value >> 8 * i) & 0xff);
@@ -121,7 +131,23 @@ public final class Fx2nControl {
 		return ret;
 	}
 
-	private final static byte[] hexStringToBytes(String hexString) {
+	public final static int[] hexStringToInt(String hexString, int unitLen) {
+		byte[] bytes = hexStringToBytes(hexString);
+		int i, j, len;
+		int[] ret = null;
+		if (bytes != null) {
+			len = bytes.length / unitLen;
+			ret = new int[len];
+			for (i = 0; i < len; i++) {
+				for (j = 0; j < unitLen; j++) {
+					ret[i] += (bytes[i * unitLen + j] << j * 8);
+				}
+			}
+		}
+		return ret;
+	}
+
+	public final static byte[] hexStringToBytes(String hexString) {
 		if (hexString == null || hexString.equals("")) {
 			return null;
 		}
@@ -132,5 +158,21 @@ public final class Fx2nControl {
 			d[i] = Byte.decode("0x" + hexString.substring(pos, pos + 2));
 		}
 		return d;
+	}
+
+	public final static boolean[] bytesToBits(byte[] bytes) {
+		boolean[] retValues = new boolean[bytes.length * 8];
+		int i, j, tmp;
+		for (i = 0; i < bytes.length; i++) {
+			for (j = 0; j < 8; j++) {
+				tmp = (bytes[i] >> j) & 0x1;
+				if (tmp > 0) {
+					retValues[i * 8 + j] = true;
+				} else {
+					retValues[i * 8 + j] = false;
+				}
+			}
+		}
+		return retValues;
 	}
 }

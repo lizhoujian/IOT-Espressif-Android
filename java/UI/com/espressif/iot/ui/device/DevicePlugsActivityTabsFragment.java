@@ -18,7 +18,7 @@ public class DevicePlugsActivityTabsFragment extends LazyFragment {
 		super.onCreateViewLazy(savedInstanceState);
 		setContentView(R.layout.fragment_tabmain_item);
 		tabIndex = getArguments().getInt(INTENT_INT_INDEX);
-		TextView v = (TextView) findViewById(R.id.fragment_mainTab_item_textView);
+		TextView v = (TextView) findViewById(R.id.txtDesc);
 		v.setText("load " + tabIndex);
 	}
 

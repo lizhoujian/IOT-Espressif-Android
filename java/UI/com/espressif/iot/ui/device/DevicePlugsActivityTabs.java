@@ -82,7 +82,7 @@ public class DevicePlugsActivityTabs extends DeviceActivityAbs {
 		indicator.setOnTransitionListener(new OnTransitionTextListener()
 				.setColorId(this, selectColorId, unSelectColorId));
 
-		viewPager.setOffscreenPageLimit(2);
+		viewPager.setOffscreenPageLimit(names.length);
 		indicatorViewPager = new IndicatorViewPager(indicator, viewPager);
 		inflate = LayoutInflater.from(getApplicationContext());
 		indicatorViewPager

@@ -3,6 +3,8 @@ package com.espressif.iot.type.device.status;
 import java.util.List;
 import java.util.Vector;
 
+import android.os.Handler;
+
 public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 	private List<IAperture> mApertureList;
 
@@ -16,6 +18,8 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 	private int len = 0;
 
 	private int result;
+
+	private Handler handler;
 
 	public EspStatusPlugs() {
 		mApertureList = new Vector<IAperture>();
@@ -92,6 +96,10 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 		return this.addrType;
 	}
 
+	public void setAddrType(int addrType) {
+		this.addrType = addrType;
+	}
+
 	public int getAddr() {
 		return this.addr;
 	}
@@ -120,6 +128,16 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 	@Override
 	public void setCmd(int i) {
 		this.cmd = i;
+	}
+
+	@Override
+	public void setHandler(Handler handler) {
+		this.handler = handler;
+	}
+
+	@Override
+	public Handler getHandler() {
+		return this.handler;
 	}
 
 }

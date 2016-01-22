@@ -79,8 +79,10 @@ public class EspCommandPlugsPostStatusLocal implements
 				status.setValue(value);
 			}
 			status.setCmd(oldstatus.getCmd());
+			status.setAddrType(oldstatus.getAddrType());
 			status.setResult(result);
 			status.setAction(oldstatus.getAction());
+			status.setHandler(oldstatus.getHandler());
 			Fx2nControl.setLastStatus(status);
 		} catch (JSONException e) {
 			e.printStackTrace();
