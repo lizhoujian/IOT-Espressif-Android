@@ -271,7 +271,6 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		mPullRereshScorllView = (PullToRefreshScrollView) findViewById(R.id.pull_to_refresh_scrollview);
 		mPullRereshScorllView.setOnRefreshListener(this);
-		mPullRereshScorllView.setScrollingWhileRefreshingEnabled(true);
 		txtMsg.setText("");
 		setHandler(handler);
 		handler.postDelayed(new Runnable() {
