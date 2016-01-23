@@ -83,7 +83,7 @@ public final class Fx2nControl {
 					handler.sendMessage(handler.obtainMessage(
 							Fx2nControl.REQUEST_PLC_RUN_STOP,
 							status.getResult(), 0));
-				} else if (action.equalsIgnoreCase("register_count")) {
+				} else if (action.equalsIgnoreCase("reg_bits")) {
 					handler.sendMessage(handler.obtainMessage(
 							Fx2nControl.REQUEST_PLC_REGISTER_COUNT,
 							status.getValue()));
@@ -125,7 +125,7 @@ public final class Fx2nControl {
 		int ret = 0;
 		if (bytes != null) {
 			for (i = 0; i < bytes.length; i++) {
-				ret += (bytes[i] << i * 8);
+				ret |= ((bytes[i] & 0xff) << i * 8);
 			}
 		}
 		return ret;
@@ -133,32 +133,51 @@ public final class Fx2nControl {
 
 	public final static int[] hexStringToInt(String hexString, int unitLen) {
 		byte[] bytes = hexStringToBytes(hexString);
-		int i, j, len;
+		int i, j, len, v;
 		int[] ret = null;
 		if (bytes != null) {
 			len = bytes.length / unitLen;
 			ret = new int[len];
 			for (i = 0; i < len; i++) {
 				for (j = 0; j < unitLen; j++) {
-					ret[i] += (bytes[i * unitLen + j] << j * 8);
+					ret[i] |= ((bytes[i * unitLen + j] & 0xff) << j * 8);
 				}
 			}
 		}
 		return ret;
 	}
 
-	public final static byte[] hexStringToBytes(String hexString) {
+	public static byte[] hexStringToBytes(String hexString) {
 		if (hexString == null || hexString.equals("")) {
 			return null;
 		}
+		hexString = hexString.toUpperCase();
 		int length = hexString.length() / 2;
+		char[] hexChars = hexString.toCharArray();
 		byte[] d = new byte[length];
 		for (int i = 0; i < length; i++) {
 			int pos = i * 2;
-			d[i] = Byte.decode("0x" + hexString.substring(pos, pos + 2));
+			d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[pos + 1]));
 		}
 		return d;
 	}
+
+	private static byte charToByte(char c) {
+		return (byte) "0123456789ABCDEF".indexOf(c);
+	}
+//
+//	public final static byte[] hexStringToBytes(String hexString) {
+//		if (hexString == null || hexString.equals("")) {
+//			return null;
+//		}
+//		int length = hexString.length() / 2;
+//		byte[] d = new byte[length];
+//		for (int i = 0; i < length; i++) {
+//			int pos = i * 2;
+//			d[i] = Byte.decode("0x" + hexString.substring(pos, pos + 2));
+//		}
+//		return d;
+//	}
 
 	public final static boolean[] bytesToBits(byte[] bytes) {
 		boolean[] retValues = new boolean[bytes.length * 8];

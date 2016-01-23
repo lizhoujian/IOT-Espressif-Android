@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +28,10 @@ import com.espressif.iot.R;
 import com.espressif.iot.type.device.EspPlugsAperture;
 import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
-import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnLastItemVisibleListener;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
-import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 interface IListItem {
 	int getId();
@@ -88,8 +89,7 @@ class RegListItem implements IListItem {
 }
 
 public class DevicePlugsActivityTabsFragmentRegister extends
-		DevicePlugsActivityTabsFragmentBase implements
-		OnRefreshListener<ScrollView> {
+		DevicePlugsActivityTabsFragmentBase {
 	private static final String TAG = "DevicePlugsActivityTabsFragmentRegister";
 
 	private TextView txtMsg;
@@ -97,14 +97,37 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	protected ListView mListView;
 	private ListAdapter mAdapter;
 	private List<IListItem> mList = new Vector<IListItem>();
-	private PullToRefreshScrollView mPullRereshScorllView;
+	private PullToRefreshListView mPullRefreshListView;
 
 	private String addrTypeName = "";
 	private int addrType = 0;
 	private int regIndex = 0;
-	private int regCount = 2;
+	private int regBitCount = 16;
 	private int mByteLen = 0;
 	private boolean mBitMode = true;
+
+	private boolean isAppendList = false;
+
+	private int totalPage = 2;
+	private int currentPage = 0;
+	private int countPerPage = 16;
+
+	private void refreshPaging() {
+		int lines;
+		if (mBitMode) {
+			lines = regBitCount / 1;
+		} else {
+			lines = regBitCount / (mByteLen * 8);
+		}
+		totalPage = lines / countPerPage;
+		if ((lines % countPerPage) > 0) {
+			totalPage++;
+		}
+	}
+
+	private int getCurrentStartAddr() {
+		return currentPage * countPerPage;
+	}
 
 	private Handler handler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
@@ -112,12 +135,16 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			switch (msg.what) {
 			case Fx2nControl.REQUEST_CONTROL:
 				v = (String) msg.obj;
-				parseRegValues(v);
+				if (!v.isEmpty()) {
+					parseRegValues(v);
+				}
 				break;
 			case Fx2nControl.REQUEST_PLC_REGISTER_COUNT:
 				v = (String) msg.obj;
-				regCount = Integer.parseInt(v);
-				executeByteControlRead(0); // reload
+				if (!v.isEmpty()) {
+					regBitCount = Integer.parseInt(v);
+					refreshPaging();
+				}
 				break;
 			}
 			super.handleMessage(msg);
@@ -139,7 +166,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			Toast.makeText(daa, R.string.esp_device_plugs_get_status_failed,
 					Toast.LENGTH_LONG).show();
 		}
-		mPullRereshScorllView.onRefreshComplete();
+		mPullRefreshListView.onRefreshComplete();
 	}
 
 	private void parseRegValues(String regValues) {
@@ -153,46 +180,77 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	private void parseRegValuesBit(String regValues) {
 		boolean[] bits = Fx2nControl.bytesToBits(Fx2nControl
 				.hexStringToBytes(regValues));
-		int bitsLen = regCount * mByteLen * 8;
+		int rows = regBitCount;
+		int leftRows = 0;
+		int addr = 0;
 		int i;
 		if (bits == null) {
 			Log.e(TAG, "parseRegValuesBit bits is null.");
 			return;
 		}
-		if (bits.length != bitsLen) {
+		if (bits.length > countPerPage) {
 			Log.w(TAG, "parseRegValues bits.length=" + bits.length
-					+ ",bitsLen=" + bitsLen);
+					+ ",countPerPage=" + countPerPage);
 		}
 
-		mList.clear();
-		for (i = 0; i < bits.length; i++) {
-			IListItem aperture = new RegListItem(i);
-			aperture.setTitle(addrTypeName + i);
+		if (!isAppendList) {
+			mList.clear();
+			isAppendList = false;
+		}
+		addr = mList.size();
+		if (mList.size() + countPerPage > rows) {
+			leftRows = rows - mList.size();
+		} else {
+			leftRows = countPerPage;
+		}
+		if (leftRows > bits.length) {
+			leftRows = bits.length;
+		}
+		for (i = 0; i < leftRows; i++) {
+			IListItem aperture = new RegListItem(addr);
+			aperture.setTitle(addrTypeName + addr);
 			aperture.setValue(bits[i] ? 1 : 0);
 			mList.add(aperture);
+			addr++;
 		}
 
 		mAdapter.notifyDataSetChanged();
 	}
 
 	private void parseRegValuesByte(String regValues) {
+		int rows = regBitCount / (mByteLen * 8);
+		int leftRows = 0;
 		int i;
+		int addr = 0;
 		int[] values = Fx2nControl.hexStringToInt(regValues, mByteLen);
 		if (values == null) {
 			Log.e(TAG, "parseRegValuesByte values is null.");
 			return;
 		}
-		if (values.length != regCount) {
+		if (values.length > countPerPage) {
 			Log.w(TAG, "parseRegValues values.length=" + values.length
-					+ ",regCount=" + regCount);
+					+ ",countPerPage=" + countPerPage);
 		}
 
-		mList.clear();
-		for (i = 0; i < values.length; i++) {
-			IListItem aperture = new RegListItem(i);
-			aperture.setTitle(addrTypeName + i);
+		if (!isAppendList) {
+			mList.clear();
+			isAppendList = false;
+		}
+		addr = mList.size();
+		if (mList.size() + countPerPage > rows) {
+			leftRows = rows - mList.size();
+		} else {
+			leftRows = countPerPage;
+		}
+		if (leftRows > values.length) {
+			leftRows = values.length;
+		}
+		for (i = 0; i < leftRows; i++) {
+			IListItem aperture = new RegListItem(addr);
+			aperture.setTitle(addrTypeName + addr);
 			aperture.setValue(values[i]);
 			mList.add(aperture);
+			addr++;
 		}
 
 		mAdapter.notifyDataSetChanged();
@@ -225,6 +283,13 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 	private void onListItemClick(AdapterView<?> parent, View view,
 			int _position, long id) {
+		if (addrType == Fx2nControl.REG_X) {
+			return;
+		}
+		if (_position > 0) {
+			_position--;
+		}
+		Log.d(TAG, "current click item = " + _position);
 		final int position = _position;
 		final IListItem item = mList.get(position);
 		final int v = item.getValue();
@@ -258,7 +323,49 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		txtMsg = (TextView) findViewById(R.id.txtDesc);
 
-		mListView = (ListView) findViewById(R.id.aperture_list);
+		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.pull_refresh_list);
+		// Set a listener to be invoked when the list should be refreshed.
+		mPullRefreshListView
+				.setOnRefreshListener(new OnRefreshListener<ListView>() {
+					@Override
+					public void onRefresh(
+							PullToRefreshBase<ListView> refreshView) {
+						// String label = DateUtils.formatDateTime(
+						// getApplicationContext(),
+						// System.currentTimeMillis(),
+						// DateUtils.FORMAT_SHOW_TIME
+						// | DateUtils.FORMAT_SHOW_DATE
+						// | DateUtils.FORMAT_ABBREV_ALL);
+						// // Update the LastUpdatedLabel
+						// refreshView.getLoadingLayoutProxy()
+						// .setLastUpdatedLabel(label);
+						currentPage = 0;
+						executeByteControlRead(0, countPerPage);
+						isAppendList = false;
+					}
+				});
+		mPullRefreshListView
+				.setOnLastItemVisibleListener(new OnLastItemVisibleListener() {
+					@Override
+					public void onLastItemVisible() {
+						if (!isAppendList) {
+							Toast.makeText(daa, "ÉÏÀ­Ë¢ÐÂ",
+									Toast.LENGTH_SHORT).show();
+							isAppendList = true;
+							return;
+						}
+						if (currentPage < totalPage) {
+							currentPage++;
+							executeByteControlRead(getCurrentStartAddr(),
+									countPerPage);
+						}
+					}
+				});
+
+		mListView = (ListView) mPullRefreshListView.getRefreshableView();
+		// Need to use the Actual ListView when registering for Context Menu
+		registerForContextMenu(mListView);
+
 		mAdapter = new ListAdapter(daa);
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(new OnItemClickListener() {
@@ -269,15 +376,13 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			}
 		});
 
-		mPullRereshScorllView = (PullToRefreshScrollView) findViewById(R.id.pull_to_refresh_scrollview);
-		mPullRereshScorllView.setOnRefreshListener(this);
 		txtMsg.setText("");
 		setHandler(handler);
 		handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
 				executeRegisterCountGet();
-				executeByteControlRead(0);
+				executeByteControlRead(0, countPerPage);
 			}
 		}, 10);
 	}
@@ -285,7 +390,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	private void executeRegisterCountGet() {
 		int bitAddrType = addrType;
 		IEspStatusPlugs status = new EspStatusPlugs();
-		status.setControlParam("register_count", 0, bitAddrType, 0, "", 0);
+		status.setAction("reg_bits");
+		status.setCmd(bitAddrType);
 		executePost(status);
 	}
 
@@ -298,8 +404,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		executePost(status);
 	}
 
-	private void executeByteControlRead(int addr) {
-		executeByteControl(addr, regCount, false, 0);
+	private void executeByteControlRead(int addr, int rows) {
+		executeByteControl(addr, rows, false, 0);
 	}
 
 	private void executeByteControlWrite(int addr, int writeValue) {
@@ -311,8 +417,17 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		int byteAddrType = addrType;
 		int byteAddr = addr;
 		int byteWriteValue = writeValue;
-		int byteLen = mByteLen * count;
+		int byteLen;
 		String hexString = "";
+
+		if (mBitMode) {
+			byteLen = count / 8;
+			if (count % 8 > 0) {
+				byteLen++;
+			}
+		} else {
+			byteLen = count * mByteLen;
+		}
 
 		if (isWrite) {
 			hexString = Fx2nControl.toHexString(byteWriteValue, byteLen);
@@ -394,18 +509,12 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				holder.status.setBackgroundResource(statusIcon);
 				holder.status.setVisibility(View.VISIBLE);
 			} else {
-				holder.statusText
-						.setText(Integer.toString(aperture.getValue()));
+				long ul = aperture.getValue();
+				holder.statusText.setText(Long.toString(ul));
 				holder.statusText.setVisibility(View.VISIBLE);
 			}
 			holder.notes.setVisibility(View.GONE);
 			return view;
 		}
-	}
-
-	@Override
-	public void onRefresh(PullToRefreshBase<ScrollView> refreshView) {
-		executeRegisterCountGet();
-		executeByteControlRead(0);
 	}
 }
