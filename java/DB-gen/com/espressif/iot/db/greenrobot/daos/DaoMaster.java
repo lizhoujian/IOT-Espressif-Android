@@ -20,88 +20,80 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDBDao;
 /**
  * Master of DAO (schema version 20): knows all DAOs.
  */
-public class DaoMaster extends AbstractDaoMaster
-{
-    public static final int SCHEMA_VERSION = 20;
-    
-    /** Creates underlying database table using DAOs. */
-    public static void createAllTables(SQLiteDatabase db, boolean ifNotExists)
-    {
-        UserDBDao.createTable(db, ifNotExists);
-        DeviceDBDao.createTable(db, ifNotExists);
-        GroupDBDao.createTable(db, ifNotExists);
-        ApDBDao.createTable(db, ifNotExists);
-        DownloadIdValueDBDao.createTable(db, ifNotExists);
-        GenericDataDirectoryDBDao.createTable(db, ifNotExists);
-        GenericDataDBDao.createTable(db, ifNotExists);
-    }
-    
-    /** Drops underlying database table using DAOs. */
-    public static void dropAllTables(SQLiteDatabase db, boolean ifExists)
-    {
-        UserDBDao.dropTable(db, ifExists);
-        DeviceDBDao.dropTable(db, ifExists);
-        GroupDBDao.dropTable(db, ifExists);
-        ApDBDao.dropTable(db, ifExists);
-        DownloadIdValueDBDao.dropTable(db, ifExists);
-        GenericDataDirectoryDBDao.dropTable(db, ifExists);
-        GenericDataDBDao.dropTable(db, ifExists);
-    }
-    
-    public static abstract class OpenHelper extends SQLiteOpenHelper
-    {
-        
-        public OpenHelper(Context context, String name, CursorFactory factory)
-        {
-            super(context, name, factory, SCHEMA_VERSION);
-        }
-        
-        @Override
-        public void onCreate(SQLiteDatabase db)
-        {
-            Log.i("greenDAO", "Creating tables for schema version " + SCHEMA_VERSION);
-            createAllTables(db, false);
-        }
-    }
-    
-    /** WARNING: Drops all table on Upgrade! Use only during development. */
-    public static class DevOpenHelper extends OpenHelper
-    {
-        public DevOpenHelper(Context context, String name, CursorFactory factory)
-        {
-            super(context, name, factory);
-        }
-        
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-        {
-            Log.i("greenDAO", "Upgrading schema from version " + oldVersion + " to " + newVersion
-                + " by dropping all tables");
-            dropAllTables(db, true);
-            onCreate(db);
-        }
-    }
-    
-    public DaoMaster(SQLiteDatabase db)
-    {
-        super(db, SCHEMA_VERSION);
-        registerDaoClass(UserDBDao.class);
-        registerDaoClass(DeviceDBDao.class);
-        registerDaoClass(GroupDBDao.class);
-        registerDaoClass(ApDBDao.class);
-        registerDaoClass(DownloadIdValueDBDao.class);
-        registerDaoClass(GenericDataDirectoryDBDao.class);
-        registerDaoClass(GenericDataDBDao.class);
-    }
-    
-    public DaoSession newSession()
-    {
-        return new DaoSession(db, IdentityScopeType.Session, daoConfigMap);
-    }
-    
-    public DaoSession newSession(IdentityScopeType type)
-    {
-        return new DaoSession(db, type, daoConfigMap);
-    }
-    
+public class DaoMaster extends AbstractDaoMaster {
+	public static final int SCHEMA_VERSION = 20;
+
+	/** Creates underlying database table using DAOs. */
+	public static void createAllTables(SQLiteDatabase db, boolean ifNotExists) {
+		UserDBDao.createTable(db, ifNotExists);
+		DeviceDBDao.createTable(db, ifNotExists);
+		GroupDBDao.createTable(db, ifNotExists);
+		ApDBDao.createTable(db, ifNotExists);
+		DownloadIdValueDBDao.createTable(db, ifNotExists);
+		GenericDataDirectoryDBDao.createTable(db, ifNotExists);
+		GenericDataDBDao.createTable(db, ifNotExists);
+		RegisterDBDao.createTable(db, ifNotExists);
+	}
+
+	/** Drops underlying database table using DAOs. */
+	public static void dropAllTables(SQLiteDatabase db, boolean ifExists) {
+		UserDBDao.dropTable(db, ifExists);
+		DeviceDBDao.dropTable(db, ifExists);
+		GroupDBDao.dropTable(db, ifExists);
+		ApDBDao.dropTable(db, ifExists);
+		DownloadIdValueDBDao.dropTable(db, ifExists);
+		GenericDataDirectoryDBDao.dropTable(db, ifExists);
+		GenericDataDBDao.dropTable(db, ifExists);
+		RegisterDBDao.dropTable(db, ifExists);
+	}
+
+	public static abstract class OpenHelper extends SQLiteOpenHelper {
+
+		public OpenHelper(Context context, String name, CursorFactory factory) {
+			super(context, name, factory, SCHEMA_VERSION);
+		}
+
+		@Override
+		public void onCreate(SQLiteDatabase db) {
+			Log.i("greenDAO", "Creating tables for schema version "
+					+ SCHEMA_VERSION);
+			createAllTables(db, false);
+		}
+	}
+
+	/** WARNING: Drops all table on Upgrade! Use only during development. */
+	public static class DevOpenHelper extends OpenHelper {
+		public DevOpenHelper(Context context, String name, CursorFactory factory) {
+			super(context, name, factory);
+		}
+
+		@Override
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			Log.i("greenDAO", "Upgrading schema from version " + oldVersion
+					+ " to " + newVersion + " by dropping all tables");
+			dropAllTables(db, true);
+			onCreate(db);
+		}
+	}
+
+	public DaoMaster(SQLiteDatabase db) {
+		super(db, SCHEMA_VERSION);
+		registerDaoClass(UserDBDao.class);
+		registerDaoClass(DeviceDBDao.class);
+		registerDaoClass(GroupDBDao.class);
+		registerDaoClass(ApDBDao.class);
+		registerDaoClass(DownloadIdValueDBDao.class);
+		registerDaoClass(GenericDataDirectoryDBDao.class);
+		registerDaoClass(GenericDataDBDao.class);
+		registerDaoClass(RegisterDBDao.class);
+	}
+
+	public DaoSession newSession() {
+		return new DaoSession(db, IdentityScopeType.Session, daoConfigMap);
+	}
+
+	public DaoSession newSession(IdentityScopeType type) {
+		return new DaoSession(db, type, daoConfigMap);
+	}
+
 }

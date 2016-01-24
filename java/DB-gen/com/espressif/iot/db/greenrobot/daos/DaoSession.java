@@ -32,124 +32,133 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDBDao;
  * 
  * @see de.greenrobot.dao.AbstractDaoSession
  */
-public class DaoSession extends AbstractDaoSession
-{
-    
-    private final DaoConfig userDBDaoConfig;
-    
-    private final DaoConfig deviceDBDaoConfig;
-    
-    private final DaoConfig groupDBDaoConfig;
-    
-    private final DaoConfig apDBDaoConfig;
-    
-    private final DaoConfig downloadIdValueDBDaoConfig;
-    
-    private final DaoConfig genericDataDirectoryDBDaoConfig;
-    
-    private final DaoConfig genericDataDBDaoConfig;
-    
-    private final UserDBDao userDBDao;
-    
-    private final DeviceDBDao deviceDBDao;
-    
-    private final GroupDBDao groupDBDao;
-    
-    private final ApDBDao apDBDao;
-    
-    private final DownloadIdValueDBDao downloadIdValueDBDao;
-    
-    private final GenericDataDirectoryDBDao genericDataDirectoryDBDao;
-    
-    private final GenericDataDBDao genericDataDBDao;
-    
-    public DaoSession(SQLiteDatabase db, IdentityScopeType type,
-        Map<Class<? extends AbstractDao<?, ?>>, DaoConfig> daoConfigMap)
-    {
-        super(db);
-        
-        userDBDaoConfig = daoConfigMap.get(UserDBDao.class).clone();
-        userDBDaoConfig.initIdentityScope(type);
-        
-        deviceDBDaoConfig = daoConfigMap.get(DeviceDBDao.class).clone();
-        deviceDBDaoConfig.initIdentityScope(type);
-        
-        groupDBDaoConfig = daoConfigMap.get(GroupDBDao.class).clone();
-        groupDBDaoConfig.initIdentityScope(type);
-        
-        apDBDaoConfig = daoConfigMap.get(ApDBDao.class).clone();
-        apDBDaoConfig.initIdentityScope(type);
-        
-        downloadIdValueDBDaoConfig = daoConfigMap.get(DownloadIdValueDBDao.class).clone();
-        downloadIdValueDBDaoConfig.initIdentityScope(type);
-        
-        genericDataDirectoryDBDaoConfig = daoConfigMap.get(GenericDataDirectoryDBDao.class).clone();
-        genericDataDirectoryDBDaoConfig.initIdentityScope(type);
-        
-        genericDataDBDaoConfig = daoConfigMap.get(GenericDataDBDao.class).clone();
-        genericDataDBDaoConfig.initIdentityScope(type);
-        
-        userDBDao = new UserDBDao(userDBDaoConfig, this);
-        deviceDBDao = new DeviceDBDao(deviceDBDaoConfig, this);
-        groupDBDao = new GroupDBDao(groupDBDaoConfig, this);
-        apDBDao = new ApDBDao(apDBDaoConfig, this);
-        downloadIdValueDBDao = new DownloadIdValueDBDao(downloadIdValueDBDaoConfig, this);
-        genericDataDirectoryDBDao = new GenericDataDirectoryDBDao(genericDataDirectoryDBDaoConfig, this);
-        genericDataDBDao = new GenericDataDBDao(genericDataDBDaoConfig, this);
-        
-        registerDao(UserDB.class, userDBDao);
-        registerDao(DeviceDB.class, deviceDBDao);
-        registerDao(GroupDB.class, groupDBDao);
-        registerDao(ApDB.class, apDBDao);
-        registerDao(DownloadIdValueDB.class, downloadIdValueDBDao);
-        registerDao(GenericDataDirectoryDB.class, genericDataDirectoryDBDao);
-        registerDao(GenericDataDB.class, genericDataDBDao);
-    }
-    
-    public void clear()
-    {
-        userDBDaoConfig.getIdentityScope().clear();
-        deviceDBDaoConfig.getIdentityScope().clear();
-        groupDBDaoConfig.getIdentityScope().clear();
-        apDBDaoConfig.getIdentityScope().clear();
-        downloadIdValueDBDaoConfig.getIdentityScope().clear();
-        genericDataDirectoryDBDaoConfig.getIdentityScope().clear();
-        genericDataDBDaoConfig.getIdentityScope().clear();
-    }
-    
-    public UserDBDao getUserDBDao()
-    {
-        return userDBDao;
-    }
-    
-    public DeviceDBDao getDeviceDBDao()
-    {
-        return deviceDBDao;
-    }
-    
-    public GroupDBDao getGroupDBDao()
-    {
-        return groupDBDao;
-    }
-    
-    public ApDBDao getApDBDao()
-    {
-        return apDBDao;
-    }
-    
-    public DownloadIdValueDBDao getDownloadIdValueDBDao()
-    {
-        return downloadIdValueDBDao;
-    }
-    
-    public GenericDataDirectoryDBDao getGenericDataDirectoryDBDao()
-    {
-        return genericDataDirectoryDBDao;
-    }
-    
-    public GenericDataDBDao getGenericDataDBDao()
-    {
-        return genericDataDBDao;
-    }
-    
+public class DaoSession extends AbstractDaoSession {
+
+	private final DaoConfig userDBDaoConfig;
+
+	private final DaoConfig deviceDBDaoConfig;
+
+	private final DaoConfig groupDBDaoConfig;
+
+	private final DaoConfig apDBDaoConfig;
+
+	private final DaoConfig downloadIdValueDBDaoConfig;
+
+	private final DaoConfig genericDataDirectoryDBDaoConfig;
+
+	private final DaoConfig genericDataDBDaoConfig;
+	
+	private final DaoConfig registerDBDaoConfig;
+
+	private final UserDBDao userDBDao;
+
+	private final DeviceDBDao deviceDBDao;
+
+	private final GroupDBDao groupDBDao;
+
+	private final ApDBDao apDBDao;
+
+	private final DownloadIdValueDBDao downloadIdValueDBDao;
+
+	private final GenericDataDirectoryDBDao genericDataDirectoryDBDao;
+
+	private final GenericDataDBDao genericDataDBDao;
+
+	private final RegisterDBDao registerDBDao;
+
+	public DaoSession(SQLiteDatabase db, IdentityScopeType type,
+			Map<Class<? extends AbstractDao<?, ?>>, DaoConfig> daoConfigMap) {
+		super(db);
+
+		userDBDaoConfig = daoConfigMap.get(UserDBDao.class).clone();
+		userDBDaoConfig.initIdentityScope(type);
+
+		deviceDBDaoConfig = daoConfigMap.get(DeviceDBDao.class).clone();
+		deviceDBDaoConfig.initIdentityScope(type);
+
+		groupDBDaoConfig = daoConfigMap.get(GroupDBDao.class).clone();
+		groupDBDaoConfig.initIdentityScope(type);
+
+		apDBDaoConfig = daoConfigMap.get(ApDBDao.class).clone();
+		apDBDaoConfig.initIdentityScope(type);
+
+		downloadIdValueDBDaoConfig = daoConfigMap.get(
+				DownloadIdValueDBDao.class).clone();
+		downloadIdValueDBDaoConfig.initIdentityScope(type);
+
+		genericDataDirectoryDBDaoConfig = daoConfigMap.get(
+				GenericDataDirectoryDBDao.class).clone();
+		genericDataDirectoryDBDaoConfig.initIdentityScope(type);
+
+		genericDataDBDaoConfig = daoConfigMap.get(GenericDataDBDao.class)
+				.clone();
+		genericDataDBDaoConfig.initIdentityScope(type);
+
+		registerDBDaoConfig = daoConfigMap.get(RegisterDBDao.class).clone();
+		registerDBDaoConfig.initIdentityScope(type);
+		
+		userDBDao = new UserDBDao(userDBDaoConfig, this);
+		deviceDBDao = new DeviceDBDao(deviceDBDaoConfig, this);
+		groupDBDao = new GroupDBDao(groupDBDaoConfig, this);
+		apDBDao = new ApDBDao(apDBDaoConfig, this);
+		downloadIdValueDBDao = new DownloadIdValueDBDao(
+				downloadIdValueDBDaoConfig, this);
+		genericDataDirectoryDBDao = new GenericDataDirectoryDBDao(
+				genericDataDirectoryDBDaoConfig, this);
+		genericDataDBDao = new GenericDataDBDao(genericDataDBDaoConfig, this);
+		registerDBDao = new RegisterDBDao(registerDBDaoConfig, this);
+
+		registerDao(UserDB.class, userDBDao);
+		registerDao(DeviceDB.class, deviceDBDao);
+		registerDao(GroupDB.class, groupDBDao);
+		registerDao(ApDB.class, apDBDao);
+		registerDao(DownloadIdValueDB.class, downloadIdValueDBDao);
+		registerDao(GenericDataDirectoryDB.class, genericDataDirectoryDBDao);
+		registerDao(GenericDataDB.class, genericDataDBDao);
+		registerDao(RegisterDB.class, registerDBDao);
+	}
+
+	public void clear() {
+		userDBDaoConfig.getIdentityScope().clear();
+		deviceDBDaoConfig.getIdentityScope().clear();
+		groupDBDaoConfig.getIdentityScope().clear();
+		apDBDaoConfig.getIdentityScope().clear();
+		downloadIdValueDBDaoConfig.getIdentityScope().clear();
+		genericDataDirectoryDBDaoConfig.getIdentityScope().clear();
+		genericDataDBDaoConfig.getIdentityScope().clear();
+		registerDBDaoConfig.getIdentityScope().clear();
+	}
+
+	public UserDBDao getUserDBDao() {
+		return userDBDao;
+	}
+
+	public RegisterDBDao getRegisterDBDao() {
+		return registerDBDao;
+	}
+
+	public DeviceDBDao getDeviceDBDao() {
+		return deviceDBDao;
+	}
+
+	public GroupDBDao getGroupDBDao() {
+		return groupDBDao;
+	}
+
+	public ApDBDao getApDBDao() {
+		return apDBDao;
+	}
+
+	public DownloadIdValueDBDao getDownloadIdValueDBDao() {
+		return downloadIdValueDBDao;
+	}
+
+	public GenericDataDirectoryDBDao getGenericDataDirectoryDBDao() {
+		return genericDataDirectoryDBDao;
+	}
+
+	public GenericDataDBDao getGenericDataDBDao() {
+		return genericDataDBDao;
+	}
+
 }

@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -25,6 +26,9 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.espressif.iot.R;
+import com.espressif.iot.db.IOTRegisterDBManager;
+import com.espressif.iot.db.greenrobot.daos.RegisterDB;
+import com.espressif.iot.object.db.IRegisterDB;
 import com.espressif.iot.type.device.EspPlugsAperture;
 import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
@@ -126,7 +130,11 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	}
 
 	private int getCurrentStartAddr() {
-		return currentPage * countPerPage;
+		if (mBitMode) {
+			return (currentPage * countPerPage) / 8;
+		} else {
+			return currentPage * countPerPage;
+		}
 	}
 
 	private Handler handler = new Handler() {
@@ -177,6 +185,16 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 	}
 
+	private String getItemName(int addr, int addrType) {
+		String origName = addrTypeName + addr;
+		IRegisterDB r = IOTRegisterDBManager.getInstance().find(addrType, addr);
+		if (r != null) {
+			return r.getRegName();
+		} else {
+			return "";
+		}
+	}
+
 	private void parseRegValuesBit(String regValues) {
 		boolean[] bits = Fx2nControl.bytesToBits(Fx2nControl
 				.hexStringToBytes(regValues));
@@ -208,7 +226,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		for (i = 0; i < leftRows; i++) {
 			IListItem aperture = new RegListItem(addr);
-			aperture.setTitle(addrTypeName + addr);
+			aperture.setTitle(getItemName(addr, addrType));
 			aperture.setValue(bits[i] ? 1 : 0);
 			mList.add(aperture);
 			addr++;
@@ -247,13 +265,41 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		for (i = 0; i < leftRows; i++) {
 			IListItem aperture = new RegListItem(addr);
-			aperture.setTitle(addrTypeName + addr);
+			aperture.setTitle(getItemName(addr, addrType));
 			aperture.setValue(values[i]);
 			mList.add(aperture);
 			addr++;
 		}
 
 		mAdapter.notifyDataSetChanged();
+	}
+
+	private void showRenameDialog(final IListItem item) {
+		final EditText title = new EditText(daa);
+		title.setSingleLine();
+		title.setText(item.getTitle());
+		LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.WRAP_CONTENT);
+		title.setLayoutParams(lp);
+		new AlertDialog.Builder(daa)
+				.setView(title)
+				.setTitle("重命名")
+				.setPositiveButton(android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								RegisterDB r = new RegisterDB();
+								r.setId(0);
+								r.setRegType(addrType);
+								r.setRegAddr(item.getId());
+								r.setRegName(title.getText().toString());
+								IOTRegisterDBManager.getInstance()
+										.insertOrReplace(r);
+								item.setTitle(r.getRegName());
+							}
+
+						}).show();
 	}
 
 	private void showEditDialog(final IListItem item) {
@@ -279,6 +325,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 							}
 
 						}).show();
+	}
+
+	private void onListItemLongClick(AdapterView<?> parent, View view,
+			int _position, long id) {
+		if (_position > 0) {
+			_position--;
+		}
+		Log.d(TAG, "current long click item = " + _position);
+		final int position = _position;
+		final IListItem item = mList.get(position);
+		showRenameDialog(item);
+		mAdapter.notifyDataSetChanged();
 	}
 
 	private void onListItemClick(AdapterView<?> parent, View view,
@@ -349,8 +407,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 					@Override
 					public void onLastItemVisible() {
 						if (!isAppendList) {
-							Toast.makeText(daa, "上拉刷新",
-									Toast.LENGTH_SHORT).show();
+							Toast.makeText(daa, "上拉刷新", Toast.LENGTH_SHORT)
+									.show();
 							isAppendList = true;
 							return;
 						}
@@ -373,6 +431,15 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				onListItemClick(parent, view, position, id);
+			}
+		});
+		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				onListItemLongClick(parent, view, position, id);
+				return true;
 			}
 		});
 
@@ -499,17 +566,19 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				holder = (ViewHolder) view.getTag();
 			}
 
-			IListItem aperture = getItem(position);
+			IListItem item = getItem(position);
 			holder.icon
 					.setBackgroundResource(R.drawable.esp_icon_plugs_aperture);
-			holder.title.setText(aperture.getTitle());
+			holder.title.setText(item.getTitle().isEmpty() ? addrTypeName
+					+ item.getId() : item.getTitle() + "("
+					+ addrTypeName + item.getId() + ")");
 			if (mBitMode) {
-				int statusIcon = aperture.getValue() > 0 ? R.drawable.esp_plug_small_on
+				int statusIcon = item.getValue() > 0 ? R.drawable.esp_plug_small_on
 						: R.drawable.esp_plug_small_off;
 				holder.status.setBackgroundResource(statusIcon);
 				holder.status.setVisibility(View.VISIBLE);
 			} else {
-				long ul = aperture.getValue();
+				long ul = item.getValue();
 				holder.statusText.setText(Long.toString(ul));
 				holder.statusText.setVisibility(View.VISIBLE);
 			}
