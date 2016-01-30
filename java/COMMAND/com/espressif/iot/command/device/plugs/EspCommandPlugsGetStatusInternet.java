@@ -86,17 +86,21 @@ public class EspCommandPlugsGetStatusInternet implements
 
 	@Override
 	public IEspStatusPlugs doCommandPlugsGetStatusInternet(String deviceKey) {
-		String headerKey = Authorization;
-		String headerValue = Token + " " + deviceKey;
-		HeaderPair header = new HeaderPair(headerKey, headerValue);
+		try {
+			String headerKey = Authorization;
+			String headerValue = Token + " " + deviceKey;
+			HeaderPair header = new HeaderPair(headerKey, headerValue);
 
-		JSONObject resultJSON = EspBaseApiUtil.Get(URL, header);
-		if (resultJSON == null) {
-			return null;
+			JSONObject resultJSON = EspBaseApiUtil.Get(URL, header);
+			if (resultJSON == null) {
+				return null;
+			}
+
+			// return parsePlugsResponse(resultJSON);
+			return parseControlResponse(resultJSON);
+		} catch (Exception e) {
 		}
-
-		// return parsePlugsResponse(resultJSON);
-		return parseControlResponse(resultJSON);
+		return null;
 	}
 
 }

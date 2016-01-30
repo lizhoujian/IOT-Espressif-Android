@@ -148,7 +148,11 @@ public class EspCommandPlugsPostStatusInternet implements
 	@Override
 	public boolean doCommandPlugsPostStatusInternet(String deviceKey,
 			IEspStatusPlugs status) {
-		// return plugsPost(deviceKey, status);
-		return controlPost(deviceKey, status);
+		try {
+			// return plugsPost(deviceKey, status);
+			return controlPost(deviceKey, status);
+		} catch (Exception e) {
+		}
+		return false;
 	}
 }

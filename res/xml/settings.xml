@@ -61,9 +61,9 @@
         android:key="version_category"
         android:title="@string/esp_settings_version"
         espressif:titleColor="@color/esp_preference_category_title" >
-        <Preference
+        <!-- <Preference
             android:key="version_upgrade"
-            android:title="@string/esp_settings_version_upgrade" />
+            android:title="@string/esp_settings_version_upgrade" /> -->
         <Preference
             android:key="version_name"
             android:title="@string/esp_settings_version_name" />

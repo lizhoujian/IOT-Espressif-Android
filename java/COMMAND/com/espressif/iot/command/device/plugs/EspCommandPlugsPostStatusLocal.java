@@ -92,17 +92,21 @@ public class EspCommandPlugsPostStatusLocal implements
 	@Override
 	public boolean doCommandPlugsPostStatusLocal(InetAddress inetAddress,
 			IEspStatusPlugs status, String deviceBssid, boolean isMeshDevice) {
-		String url = getLocalUrl(inetAddress);
+		try {
+			String url = getLocalUrl(inetAddress);
 
-		JSONObject params = createControlRequest(status);
+			JSONObject params = createControlRequest(status);
 
-		JSONObject result;
-		if (deviceBssid == null || !isMeshDevice) {
-			result = EspBaseApiUtil.Post(url, params);
-		} else {
-			result = EspBaseApiUtil.PostForJson(url, deviceBssid, params);
+			JSONObject result;
+			if (deviceBssid == null || !isMeshDevice) {
+				result = EspBaseApiUtil.Post(url, params);
+			} else {
+				result = EspBaseApiUtil.PostForJson(url, deviceBssid, params);
+			}
+			parseControlResponse(status, result);
+			return result != null;
+		} catch (Exception e) {
 		}
-		parseControlResponse(status, result);
-		return result != null;
+		return false;
 	}
 }

@@ -81,19 +81,23 @@ public class EspCommandPlugsGetStatusLocal implements
 	@Override
 	public IEspStatusPlugs doCommandPlugsGetStatusLocal(
 			InetAddress inetAddress, String deviceBssid, boolean isMeshDevice) {
-		String url = getLocalUrl(inetAddress);
-		JSONObject resultJSON = null;
-		if (deviceBssid == null || !isMeshDevice) {
-			resultJSON = EspBaseApiUtil.Get(url);
-		} else {
-			resultJSON = EspBaseApiUtil.GetForJson(url, deviceBssid);
-		}
+		try {
+			String url = getLocalUrl(inetAddress);
+			JSONObject resultJSON = null;
+			if (deviceBssid == null || !isMeshDevice) {
+				resultJSON = EspBaseApiUtil.Get(url);
+			} else {
+				resultJSON = EspBaseApiUtil.GetForJson(url, deviceBssid);
+			}
 
-		if (resultJSON == null) {
-			return null;
-		}
+			if (resultJSON == null) {
+				return null;
+			}
 
-		// return parsePlugsResponse(resultJSON);
-		return parseControlResponse(resultJSON);
+			// return parsePlugsResponse(resultJSON);
+			return parseControlResponse(resultJSON);
+		} catch (Exception e) {
+		}
+		return null;
 	}
 }

@@ -64,7 +64,7 @@
 
     <string name="esp_activity_bottom_item_more_overflow">More</string>
 
-    <string name="esp_ui_title">IOT Espressif</string>
+    <string name="esp_ui_title">IOT Control</string>
     <string name="esp_ui_menu_edit">Edit</string>
     <string name="esp_ui_menu_scene">Scene</string>
     <string name="esp_ui_menu_add_device">Add device</string>

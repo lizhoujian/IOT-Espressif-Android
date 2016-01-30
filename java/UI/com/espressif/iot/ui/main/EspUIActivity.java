@@ -343,8 +343,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     {
         mConfigureBtn =
             bottomMenu.addBottomItem(MENU_ID_ADD_DEVICE, R.drawable.esp_icon_add, R.string.esp_ui_menu_add_device);
-        bottomMenu.addBottomItem(MENU_ID_SCENE, R.drawable.esp_menu_icon_scene, R.string.esp_ui_menu_scene);
-        bottomMenu.addBottomItem(MENU_ID_EDIT, R.drawable.esp_menu_icon_edit, R.string.esp_ui_menu_edit);
+        //bottomMenu.addBottomItem(MENU_ID_SCENE, R.drawable.esp_menu_icon_scene, R.string.esp_ui_menu_scene);
+        //bottomMenu.addBottomItem(MENU_ID_EDIT, R.drawable.esp_menu_icon_edit, R.string.esp_ui_menu_edit);
     }
     
     @Override

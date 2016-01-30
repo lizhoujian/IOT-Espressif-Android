@@ -64,7 +64,7 @@
 
     <string name="esp_activity_bottom_item_more_overflow">更多</string>
 
-    <string name="esp_ui_title">IOT Espressif</string>
+    <string name="esp_ui_title">物联网工业控制</string>
     <string name="esp_ui_menu_edit">编辑</string>
     <string name="esp_ui_menu_scene">场景</string>
     <string name="esp_ui_menu_add_device">添加设备</string>

@@ -73,7 +73,7 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
     {
         super.onCreateBottomItems(bottomMenu);
         
-        bottomMenu.addBottomItem(MENU_ID_HELP, R.drawable.esp_icon_help, R.string.esp_ui_menu_help);
+        //bottomMenu.addBottomItem(MENU_ID_HELP, R.drawable.esp_icon_help, R.string.esp_ui_menu_help);
     }
     
     @Override
