@@ -38,12 +38,12 @@ public class IOTRegisterDBManager implements IRegisterDBManager,
 		return instance;
 	}
 
-	@Override
-	public IRegisterDB find(int regType, int regAddr) {
+	private IRegisterDB findByRRS(int regType, int regAddr, boolean isSpinned) {
 		Query<RegisterDB> query = registerDao
 				.queryBuilder()
 				.where(Properties.RegType.eq(regType),
-						Properties.RegAddr.eq(regAddr)).build();
+						Properties.RegAddr.eq(regAddr),
+						Properties.IsSpinned.eq(isSpinned)).build();
 		List<RegisterDB> results = query.list();
 		if (results != null && results.size() > 0) {
 			log.debug(Thread.currentThread().toString()
@@ -55,6 +55,11 @@ public class IOTRegisterDBManager implements IRegisterDBManager,
 		}
 	}
 
+	@Override
+	public IRegisterDB find(int regType, int regAddr, boolean isSpinned) {
+		return findByRRS(regType, regAddr, isSpinned);
+	}
+
 	public long getLastId() {
 		Query<RegisterDB> query = registerDao.queryBuilder()
 				.orderDesc(Properties.Id).limit(1).build();
@@ -64,7 +69,6 @@ public class IOTRegisterDBManager implements IRegisterDBManager,
 		} else {
 			return 0;
 		}
-
 	}
 
 	@Override
@@ -76,12 +80,42 @@ public class IOTRegisterDBManager implements IRegisterDBManager,
 		re.setRegAddr(r.getRegAddr());
 		re.setRegName(r.getRegName());
 		re.setIsSpinned(r.getIsSpinned());
-		if ((ir = find(r.getRegType(), r.getRegAddr())) != null) {
+		if ((ir = find(r.getRegType(), r.getRegAddr(), r.getIsSpinned())) != null) {
 			re.setId(ir.getId());
 			registerDao.update(re);
 		} else {
 			re.setId(getLastId() + 1);
 			registerDao.insertOrReplace(re);
+		}
+	}
+
+	@Override
+	public List<RegisterDB> findSpinnedBy(int regType) {
+		Query<RegisterDB> query = registerDao
+				.queryBuilder()
+				.where(Properties.RegType.eq(regType),
+						Properties.IsSpinned.eq(true)).build();
+		List<RegisterDB> results = query.list();
+		if (results != null && results.size() > 0) {
+			log.debug(Thread.currentThread().toString()
+					+ "##findRegister(regType=[" + regType
+					+ ", isSpinned=true]): " + results);
+			return results;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public boolean isSpinned(int regType, int regAddr) {
+		return findByRRS(regType, regAddr, true) != null;
+	}
+
+	@Override
+	public void delete(int regType, int regAddr, boolean isSpinned) {
+		IRegisterDB r = findByRRS(regType, regAddr, isSpinned);
+		if (r != null) {
+			registerDao.deleteByKey(r.getId());
 		}
 	}
 }

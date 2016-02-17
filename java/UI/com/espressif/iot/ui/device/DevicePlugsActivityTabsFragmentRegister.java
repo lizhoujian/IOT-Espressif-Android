@@ -12,11 +12,13 @@ import android.os.Handler;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -38,6 +40,10 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 interface IListItem {
+	void setItemId(int itemId);
+
+	int getItemId();
+
 	int getId();
 
 	void setTitle(String title);
@@ -47,12 +53,18 @@ interface IListItem {
 	void setValue(int v);
 
 	int getValue();
+
+	void setSpinned(boolean spinned);
+
+	boolean isSpinned();
 }
 
 class RegListItem implements IListItem {
+	int itemId;
 	int id;
 	String title;
 	int v;
+	boolean spinned;
 
 	RegListItem() {
 		setId(0);
@@ -90,6 +102,26 @@ class RegListItem implements IListItem {
 	public int getValue() {
 		return this.v;
 	}
+
+	@Override
+	public boolean isSpinned() {
+		return this.spinned;
+	}
+
+	@Override
+	public void setSpinned(boolean spinned) {
+		this.spinned = spinned;
+	}
+
+	@Override
+	public void setItemId(int itemId) {
+		this.itemId = itemId;
+	}
+
+	@Override
+	public int getItemId() {
+		return this.itemId;
+	}
 }
 
 public class DevicePlugsActivityTabsFragmentRegister extends
@@ -101,6 +133,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	protected ListView mListView;
 	private ListAdapter mAdapter;
 	private List<IListItem> mList = new Vector<IListItem>();
+	private List<IListItem> mSpinnedList = new Vector<IListItem>();
 	private PullToRefreshListView mPullRefreshListView;
 
 	private String addrTypeName = "";
@@ -186,13 +219,17 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	}
 
 	private String getItemName(int addr, int addrType) {
-		String origName = addrTypeName + addr;
-		IRegisterDB r = IOTRegisterDBManager.getInstance().find(addrType, addr);
+		IRegisterDB r = IOTRegisterDBManager.getInstance().find(addrType, addr,
+				false);
 		if (r != null) {
 			return r.getRegName();
 		} else {
 			return "";
 		}
+	}
+
+	private boolean getIsSpinned(int addr, int addrType) {
+		return IOTRegisterDBManager.getInstance().find(addrType, addr, true) != null;
 	}
 
 	private void parseRegValuesBit(String regValues) {
@@ -208,7 +245,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		if (bits.length > countPerPage) {
 			Log.w(TAG, "parseRegValues bits.length=" + bits.length
-					+ ",countPerPage=" + countPerPage);
+					+ ",currentNeedCount=" + countPerPage);
 		}
 
 		if (!isAppendList) {
@@ -225,10 +262,12 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			leftRows = bits.length;
 		}
 		for (i = 0; i < leftRows; i++) {
-			IListItem aperture = new RegListItem(addr);
-			aperture.setTitle(getItemName(addr, addrType));
-			aperture.setValue(bits[i] ? 1 : 0);
-			mList.add(aperture);
+			IListItem item = new RegListItem(addr);
+			item.setItemId(addr);
+			item.setTitle(getItemName(addr, addrType));
+			item.setValue(bits[i] ? 1 : 0);
+			item.setSpinned(getIsSpinned(addr, addrType));
+			mList.add(item);
 			addr++;
 		}
 
@@ -247,7 +286,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		if (values.length > countPerPage) {
 			Log.w(TAG, "parseRegValues values.length=" + values.length
-					+ ",countPerPage=" + countPerPage);
+					+ ",currentNeedCount=" + countPerPage);
 		}
 
 		if (!isAppendList) {
@@ -264,10 +303,12 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			leftRows = values.length;
 		}
 		for (i = 0; i < leftRows; i++) {
-			IListItem aperture = new RegListItem(addr);
-			aperture.setTitle(getItemName(addr, addrType));
-			aperture.setValue(values[i]);
-			mList.add(aperture);
+			IListItem item = new RegListItem(addr);
+			item.setItemId(addr);
+			item.setTitle(getItemName(addr, addrType));
+			item.setValue(values[i]);
+			item.setSpinned(getIsSpinned(addr, addrType));
+			mList.add(item);
 			addr++;
 		}
 
@@ -294,6 +335,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 								r.setRegType(addrType);
 								r.setRegAddr(item.getId());
 								r.setRegName(title.getText().toString());
+								r.setIsSpinned(false);
 								IOTRegisterDBManager.getInstance()
 										.insertOrReplace(r);
 								item.setTitle(r.getRegName());
@@ -360,6 +402,26 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			showEditDialog(item);
 		}
 		mAdapter.notifyDataSetChanged();
+	}
+
+	private void loadSpinnedList() {
+		mSpinnedList.clear();
+		int i = 0;
+		List<RegisterDB> list = IOTRegisterDBManager.getInstance()
+				.findSpinnedBy(addrType);
+		if (list != null) {
+			for (RegisterDB r : list) {
+				if (r != null) {
+					int addr = r.getRegAddr();
+					IListItem item = new RegListItem(addr);
+					item.setItemId(i++);
+					item.setTitle(getItemName(addr, addrType));
+					item.setValue(0);
+					item.setSpinned(getIsSpinned(addr, addrType));
+					mSpinnedList.add(item);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -452,6 +514,12 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				executeByteControlRead(0, countPerPage);
 			}
 		}, 10);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				loadSpinnedList();
+			}
+		}).start();
 	}
 
 	private void executeRegisterCountGet() {
@@ -518,6 +586,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		TextView notes;
 		ImageView status;
 		TextView statusText;
+		Button spin;
 	}
 
 	private class ListAdapter extends BaseAdapter {
@@ -529,18 +598,26 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		@Override
 		public int getCount() {
-			int size = mList.size();
+			int size = mList.size() + mSpinnedList.size();
 			return size;
 		}
 
 		@Override
 		public IListItem getItem(int position) {
-			return mList.get(position);
+			if (position < mSpinnedList.size()) {
+				return mSpinnedList.get(position);
+			} else {
+				return mList.get(position);
+			}
 		}
 
 		@Override
 		public long getItemId(int position) {
-			return getItem(position).getId();
+			if (position < mSpinnedList.size()) {
+				return mSpinnedList.get(position).getItemId();
+			} else {
+				return mList.get(position).getItemId() + mSpinnedList.size();
+			}
 		}
 
 		@Override
@@ -560,6 +637,33 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 						.findViewById(R.id.aperture_status);
 				holder.statusText = (TextView) view
 						.findViewById(R.id.aperture_status_text);
+				holder.spin = (Button) view.findViewById(R.id.btn_spin);
+				holder.spin.setTag(position);
+				holder.spin.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Button btn = (Button) v;
+						int pos = Integer.parseInt(v.getTag().toString());
+						IListItem item = getItem(pos);
+						if (item.isSpinned()) {
+							IOTRegisterDBManager.getInstance().delete(addrType,
+									item.getId(), true);
+							btn.setText("固定");
+							item.setSpinned(false);
+						} else {
+							RegisterDB r = new RegisterDB();
+							r.setId(0);
+							r.setRegType(addrType);
+							r.setRegAddr(item.getId());
+							r.setRegName(item.getTitle());
+							r.setIsSpinned(true);
+							IOTRegisterDBManager.getInstance().insertOrReplace(
+									r);
+							btn.setText("取消固定");
+							item.setSpinned(true);
+						}
+					}
+				});
 				view.setTag(holder);
 			} else {
 				view = convertView;
@@ -570,8 +674,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			holder.icon
 					.setBackgroundResource(R.drawable.esp_icon_plugs_aperture);
 			holder.title.setText(item.getTitle().isEmpty() ? addrTypeName
-					+ item.getId() : item.getTitle() + "("
-					+ addrTypeName + item.getId() + ")");
+					+ item.getId() : item.getTitle() + "(" + addrTypeName
+					+ item.getId() + ")");
 			if (mBitMode) {
 				int statusIcon = item.getValue() > 0 ? R.drawable.esp_plug_small_on
 						: R.drawable.esp_plug_small_off;
@@ -583,6 +687,12 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				holder.statusText.setVisibility(View.VISIBLE);
 			}
 			holder.notes.setVisibility(View.GONE);
+			if (item.isSpinned()) {
+				holder.spin.setText("取消固定");
+			} else {
+				holder.spin.setText("固定");
+			}
+			holder.spin.setVisibility(View.VISIBLE);
 			return view;
 		}
 	}
