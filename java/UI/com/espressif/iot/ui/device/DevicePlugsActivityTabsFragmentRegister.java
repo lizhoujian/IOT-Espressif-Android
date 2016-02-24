@@ -21,6 +21,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -149,7 +150,11 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	private int currentPage = 0;
 	private int countPerPage = 16;
 
-	private void refreshPaging() {
+	private int getCurrentPage() {
+		return (currentPage - spinnedPages());
+	}
+
+	private int refreshPaging() {
 		int lines;
 		if (mBitMode) {
 			lines = regBitCount / 1;
@@ -160,13 +165,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		if ((lines % countPerPage) > 0) {
 			totalPage++;
 		}
+		totalPage += mSpinnedList.size() / countPerPage;
+		if ((mSpinnedList.size() % countPerPage) > 0) {
+			totalPage++;
+		}
+		return totalPage;
 	}
 
 	private int getCurrentStartAddr() {
 		if (mBitMode) {
-			return (currentPage * countPerPage) / 8;
+			return (getCurrentPage() * countPerPage) / 8;
 		} else {
-			return currentPage * countPerPage;
+			return getCurrentPage() * countPerPage;
 		}
 	}
 
@@ -239,20 +249,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		int leftRows = 0;
 		int addr = 0;
 		int i;
+		int startLoc;
+
 		if (bits == null) {
 			Log.e(TAG, "parseRegValuesBit bits is null.");
 			return;
 		}
-		if (bits.length > countPerPage) {
-			Log.w(TAG, "parseRegValues bits.length=" + bits.length
-					+ ",currentNeedCount=" + countPerPage);
-		}
 
 		if (!isAppendList) {
 			mList.clear();
-			isAppendList = false;
 		}
 		addr = mList.size();
+
 		if (mList.size() + countPerPage > rows) {
 			leftRows = rows - mList.size();
 		} else {
@@ -261,11 +269,22 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		if (leftRows > bits.length) {
 			leftRows = bits.length;
 		}
-		for (i = 0; i < leftRows; i++) {
+		if (currentPage == spinnedPages() + 1) { // need fill list
+			leftRows = countPerPage - spinnedModCount();
+			startLoc = 0;
+		} else {
+			startLoc = spinnedModCount();
+		}
+
+		if (mList.size() + leftRows > rows) {
+			leftRows = rows - mList.size();
+		}
+
+		for (i = startLoc; i < leftRows; i++) {
 			IListItem item = new RegListItem(addr);
 			item.setItemId(addr);
 			item.setTitle(getItemName(addr, addrType));
-			item.setValue(bits[i] ? 1 : 0);
+			item.setValue(bits[startLoc] ? 1 : 0);
 			item.setSpinned(getIsSpinned(addr, addrType));
 			mList.add(item);
 			addr++;
@@ -280,20 +299,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		int i;
 		int addr = 0;
 		int[] values = Fx2nControl.hexStringToInt(regValues, mByteLen);
+		int startLoc;
+
 		if (values == null) {
 			Log.e(TAG, "parseRegValuesByte values is null.");
 			return;
 		}
-		if (values.length > countPerPage) {
-			Log.w(TAG, "parseRegValues values.length=" + values.length
-					+ ",currentNeedCount=" + countPerPage);
-		}
 
 		if (!isAppendList) {
 			mList.clear();
-			isAppendList = false;
 		}
 		addr = mList.size();
+
 		if (mList.size() + countPerPage > rows) {
 			leftRows = rows - mList.size();
 		} else {
@@ -302,7 +319,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		if (leftRows > values.length) {
 			leftRows = values.length;
 		}
-		for (i = 0; i < leftRows; i++) {
+		if (currentPage == spinnedPages() + 1) { // need fill list
+			leftRows = countPerPage - spinnedModCount();
+			startLoc = 0;
+		} else {
+			startLoc = spinnedModCount();
+		}
+
+		if (mList.size() + leftRows > rows) {
+			leftRows = rows - mList.size();
+		}
+
+		for (i = startLoc; i < leftRows; i++) {
 			IListItem item = new RegListItem(addr);
 			item.setItemId(addr);
 			item.setTitle(getItemName(addr, addrType));
@@ -369,6 +397,30 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 						}).show();
 	}
 
+	private IListItem findItem(int position) {
+		if (position < mSpinnedList.size()) {
+			return mSpinnedList.get(position);
+		} else {
+			return mList.get(position - mSpinnedList.size());
+		}
+	}
+
+	private IListItem findItemInSpinned(int position) {
+		if (position < mSpinnedList.size()) {
+			return mSpinnedList.get(position);
+		} else {
+			return null;
+		}
+	}
+
+	private IListItem findItemInList(int position) {
+		if (position < mSpinnedList.size()) {
+			return null;
+		} else {
+			return mList.get(position - mSpinnedList.size());
+		}
+	}
+
 	private void onListItemLongClick(AdapterView<?> parent, View view,
 			int _position, long id) {
 		if (_position > 0) {
@@ -376,9 +428,11 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		Log.d(TAG, "current long click item = " + _position);
 		final int position = _position;
-		final IListItem item = mList.get(position);
-		showRenameDialog(item);
-		mAdapter.notifyDataSetChanged();
+		final IListItem item = findItem(position);
+		if (item != null) {
+			showRenameDialog(item);
+			mAdapter.notifyDataSetChanged();
+		}
 	}
 
 	private void onListItemClick(AdapterView<?> parent, View view,
@@ -391,17 +445,27 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		Log.d(TAG, "current click item = " + _position);
 		final int position = _position;
-		final IListItem item = mList.get(position);
-		final int v = item.getValue();
-		final int addr = item.getId();
-		if (mBitMode) {
-			int newValue = v > 0 ? 0 : 1;
-			executeBitControl(addr, newValue > 0);
-			item.setValue(newValue);
-		} else {
-			showEditDialog(item);
+		final IListItem item = findItem(position);
+		if (item != null) {
+			final int v = item.getValue();
+			final int addr = item.getId();
+			if (mBitMode) {
+				int newValue = v > 0 ? 0 : 1;
+				executeBitControl(addr, newValue > 0);
+				item.setValue(newValue);
+			} else {
+				showEditDialog(item);
+			}
+			mAdapter.notifyDataSetChanged();
 		}
-		mAdapter.notifyDataSetChanged();
+	}
+
+	private int spinnedPages() {
+		return mSpinnedList.size() / countPerPage;
+	}
+
+	private int spinnedModCount() {
+		return mSpinnedList.size() % countPerPage;
 	}
 
 	private void loadSpinnedList() {
@@ -422,6 +486,27 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				}
 			}
 		}
+		refreshPaging();
+	}
+
+	private void removeFromSpinnedList(IListItem item) {
+		if (mSpinnedList.isEmpty())
+			return;
+		if (true) {
+			for (IListItem i : mSpinnedList) {
+				if (i.getId() == item.getId()
+						&& i.getTitle().equalsIgnoreCase(item.getTitle())) {
+					mSpinnedList.remove(i);
+					break;
+				}
+			}
+		} else {
+			mSpinnedList.remove(item);
+		}
+	}
+
+	private void appendToSpinnedList(IListItem item) {
+		mSpinnedList.add(item);
 	}
 
 	@Override
@@ -460,8 +545,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 						// refreshView.getLoadingLayoutProxy()
 						// .setLastUpdatedLabel(label);
 						currentPage = 0;
-						executeByteControlRead(0, countPerPage);
-						isAppendList = false;
+						mList.clear();
+						if (mSpinnedList.size() < countPerPage) {
+							executeByteControlRead(0, countPerPage);
+							isAppendList = false;
+						} else {
+							handler.postDelayed(new Runnable() {
+								@Override
+								public void run() {
+									mPullRefreshListView.onRefreshComplete();
+								}
+							}, 100);
+						}
 					}
 				});
 		mPullRefreshListView
@@ -472,17 +567,22 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 							Toast.makeText(daa, "上拉刷新", Toast.LENGTH_SHORT)
 									.show();
 							isAppendList = true;
-							return;
-						}
-						if (currentPage < totalPage) {
-							currentPage++;
-							executeByteControlRead(getCurrentStartAddr(),
-									countPerPage);
+						} else {
+							if (currentPage < totalPage) {
+								currentPage++;
+								if (currentPage > spinnedPages()) {
+									executeByteControlRead(
+											getCurrentStartAddr(),
+											countPerPage * 2);
+								}
+							}
 						}
 					}
 				});
 
 		mListView = (ListView) mPullRefreshListView.getRefreshableView();
+		// mListView.setDivider(null);
+		mListView.setDividerHeight(1);
 		// Need to use the Actual ListView when registering for Context Menu
 		registerForContextMenu(mListView);
 
@@ -580,6 +680,22 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		super.onDestroyViewLazy();
 	}
 
+	private boolean viewCanVisible(int position) {
+		if (position >= mSpinnedList.size()) {
+			IListItem item = findItemInList(position);
+			if (item != null) {
+				for (IListItem i : mSpinnedList) {
+					if (i.getId() == item.getId()
+							&& i.getTitle().equalsIgnoreCase(item.getTitle())) {
+						Log.d(TAG, "hide list item " + position + "");
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 	private class ViewHolder {
 		ImageView icon;
 		TextView title;
@@ -587,6 +703,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		ImageView status;
 		TextView statusText;
 		Button spin;
+		int viewHeight;
 	}
 
 	private class ListAdapter extends BaseAdapter {
@@ -604,11 +721,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		@Override
 		public IListItem getItem(int position) {
-			if (position < mSpinnedList.size()) {
-				return mSpinnedList.get(position);
-			} else {
-				return mList.get(position);
-			}
+			return findItem(position);
 		}
 
 		@Override
@@ -616,7 +729,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			if (position < mSpinnedList.size()) {
 				return mSpinnedList.get(position).getItemId();
 			} else {
-				return mList.get(position).getItemId() + mSpinnedList.size();
+				return mList.get(position - mSpinnedList.size()).getItemId()
+						+ mSpinnedList.size();
 			}
 		}
 
@@ -629,16 +743,36 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 						R.layout.device_plugs_aperture_tab, parent, false);
 				holder = new ViewHolder();
 				holder.icon = (ImageView) view.findViewById(R.id.aperture_icon);
+				holder.icon.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						int pos = Integer.parseInt(v.getTag().toString());
+						onListItemClick(null, v, pos + 1, 0);
+					}
+				});
 				holder.title = (TextView) view
 						.findViewById(R.id.aperture_title);
+				holder.title.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						int pos = Integer.parseInt(v.getTag().toString());
+						onListItemClick(null, v, pos + 1, 0);
+					}
+				});
 				holder.notes = (TextView) view
 						.findViewById(R.id.aperture_notes);
 				holder.status = (ImageView) view
 						.findViewById(R.id.aperture_status);
+				holder.status.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						int pos = Integer.parseInt(v.getTag().toString());
+						onListItemClick(null, v, pos + 1, 0);
+					}
+				});
 				holder.statusText = (TextView) view
 						.findViewById(R.id.aperture_status_text);
 				holder.spin = (Button) view.findViewById(R.id.btn_spin);
-				holder.spin.setTag(position);
 				holder.spin.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -650,6 +784,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 									item.getId(), true);
 							btn.setText("固定");
 							item.setSpinned(false);
+							removeFromSpinnedList(item);
 						} else {
 							RegisterDB r = new RegisterDB();
 							r.setId(0);
@@ -659,11 +794,14 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 							r.setIsSpinned(true);
 							IOTRegisterDBManager.getInstance().insertOrReplace(
 									r);
-							btn.setText("取消固定");
+							btn.setText("取消");
 							item.setSpinned(true);
+							appendToSpinnedList(item);
 						}
+						mAdapter.notifyDataSetChanged();
 					}
 				});
+				holder.viewHeight = view.getLayoutParams().height;
 				view.setTag(holder);
 			} else {
 				view = convertView;
@@ -688,11 +826,26 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			}
 			holder.notes.setVisibility(View.GONE);
 			if (item.isSpinned()) {
-				holder.spin.setText("取消固定");
+				holder.spin.setText("取消");
 			} else {
 				holder.spin.setText("固定");
 			}
+			holder.icon.setTag(position);
+			holder.title.setTag(position);
+			holder.status.setTag(position);
 			holder.spin.setVisibility(View.VISIBLE);
+			holder.spin.setTag(position);
+			if (!viewCanVisible(position)) {
+				LayoutParams linearParams = view.getLayoutParams();
+				linearParams.height = 1;
+				view.setLayoutParams(linearParams);
+				view.setVisibility(View.GONE);
+			} else {
+				LayoutParams linearParams = view.getLayoutParams();
+				linearParams.height = holder.viewHeight;
+				view.setLayoutParams(linearParams);
+				view.setVisibility(View.VISIBLE);
+			}
 			return view;
 		}
 	}
