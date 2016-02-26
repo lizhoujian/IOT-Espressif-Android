@@ -150,6 +150,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	private int currentPage = 0;
 	private int countPerPage = 16;
 
+	private int listSize = 0;
+
 	private int getCurrentPage() {
 		return (currentPage - spinnedPages());
 	}
@@ -242,6 +244,30 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		return IOTRegisterDBManager.getInstance().find(addrType, addr, true) != null;
 	}
 
+	private IListItem findItemInSpinnedByAddr(int addr) {
+		for (IListItem i : mSpinnedList) {
+			if (i.getId() == addr) {
+				return i;
+			}
+		}
+		return null;
+	}
+
+	private void removeOutItemFromList() {
+		int id;
+		int index;
+		for (;;) {
+			index = mList.size() - 1;
+			id = mList.get(index).getId();
+			if (id > listSize) {
+				Log.d(TAG, "remove out item " + id);
+				mList.remove(index);
+			} else {
+				break;
+			}
+		}
+	}
+
 	private void parseRegValuesBit(String regValues) {
 		boolean[] bits = Fx2nControl.bytesToBits(Fx2nControl
 				.hexStringToBytes(regValues));
@@ -258,38 +284,57 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		if (!isAppendList) {
 			mList.clear();
-		}
-		addr = mList.size();
-
-		if (mList.size() + countPerPage > rows) {
-			leftRows = rows - mList.size();
+			listSize = 0;
 		} else {
+			removeOutItemFromList();
+		}
+		// addr = mList.size();
+		addr = listSize;
+
+		// if (false) {
+		// if (listSize + countPerPage > rows) {
+		// leftRows = rows - listSize;
+		// } else {
+		// leftRows = countPerPage;
+		// }
+		// if (leftRows > bits.length) {
+		// leftRows = bits.length;
+		// }
+		// startLoc = 0;
+		// if (currentPage == spinnedPages() + 1) { // need fill list
+		// leftRows = countPerPage - spinnedModCount();
+		// } else if (currentPage > 0) {
+		// startLoc = spinnedModCount();
+		// }
+		// } else
+		{
 			leftRows = countPerPage;
-		}
-		if (leftRows > bits.length) {
-			leftRows = bits.length;
-		}
-		if (currentPage == spinnedPages() + 1) { // need fill list
-			leftRows = countPerPage - spinnedModCount();
+			if (leftRows > bits.length) {
+				leftRows = bits.length;
+			}
 			startLoc = 0;
-		} else {
-			startLoc = spinnedModCount();
 		}
 
-		if (mList.size() + leftRows > rows) {
-			leftRows = rows - mList.size();
+		if (listSize + leftRows > rows) {
+			leftRows = rows - listSize;
 		}
+
+		Log.d(TAG, "bitValues addr=" + addr + ", startloc=" + startLoc
+				+ ", leftRows=" + leftRows);
 
 		for (i = startLoc; i < leftRows; i++) {
-			IListItem item = new RegListItem(addr);
-			item.setItemId(addr);
-			item.setTitle(getItemName(addr, addrType));
-			item.setValue(bits[startLoc] ? 1 : 0);
-			item.setSpinned(getIsSpinned(addr, addrType));
-			mList.add(item);
+			if (findItemInSpinnedByAddr(addr) == null) {
+				IListItem item = new RegListItem(addr);
+				item.setItemId(addr);
+				item.setTitle(getItemName(addr, addrType));
+				item.setValue(bits[i] ? 1 : 0);
+				item.setSpinned(getIsSpinned(addr, addrType));
+				mList.add(item);
+			}
 			addr++;
 		}
 
+		listSize = addr;
 		mAdapter.notifyDataSetChanged();
 	}
 
@@ -308,38 +353,56 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		if (!isAppendList) {
 			mList.clear();
-		}
-		addr = mList.size();
-
-		if (mList.size() + countPerPage > rows) {
-			leftRows = rows - mList.size();
+			listSize = 0;
 		} else {
+			removeOutItemFromList();
+		}
+		// addr = mList.size();
+		addr = listSize;
+		// if (false) {
+		// if (listSize + countPerPage > rows) {
+		// leftRows = rows - listSize;
+		// } else {
+		// leftRows = countPerPage;
+		// }
+		// if (leftRows > values.length) {
+		// leftRows = values.length;
+		// }
+		// startLoc = 0;
+		// if (currentPage == spinnedPages() + 1) { // need fill list
+		// leftRows = countPerPage - spinnedModCount();
+		// } else if (currentPage > 0) {
+		// startLoc = spinnedModCount();
+		// }
+		// } else
+		{
 			leftRows = countPerPage;
-		}
-		if (leftRows > values.length) {
-			leftRows = values.length;
-		}
-		if (currentPage == spinnedPages() + 1) { // need fill list
-			leftRows = countPerPage - spinnedModCount();
+			if (leftRows > values.length) {
+				leftRows = values.length;
+			}
 			startLoc = 0;
-		} else {
-			startLoc = spinnedModCount();
 		}
 
-		if (mList.size() + leftRows > rows) {
-			leftRows = rows - mList.size();
+		if (listSize + leftRows > rows) {
+			leftRows = rows - listSize;
 		}
+
+		Log.d(TAG, "byteValues addr=" + addr + ", startloc=" + startLoc
+				+ ", leftRows=" + leftRows);
 
 		for (i = startLoc; i < leftRows; i++) {
-			IListItem item = new RegListItem(addr);
-			item.setItemId(addr);
-			item.setTitle(getItemName(addr, addrType));
-			item.setValue(values[i]);
-			item.setSpinned(getIsSpinned(addr, addrType));
-			mList.add(item);
+			if (findItemInSpinnedByAddr(addr) == null) {
+				IListItem item = new RegListItem(addr);
+				item.setItemId(addr);
+				item.setTitle(getItemName(addr, addrType));
+				item.setValue(values[i]);
+				item.setSpinned(getIsSpinned(addr, addrType));
+				mList.add(item);
+			}
 			addr++;
 		}
 
+		listSize = addr;
 		mAdapter.notifyDataSetChanged();
 	}
 
@@ -389,7 +452,11 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 									int which) {
 								String editValue = nameEdit.getText()
 										.toString();
-								int iValue = Integer.parseInt(editValue);
+								int iValue = 0;
+								try {
+									iValue = Integer.parseInt(editValue);
+								} catch (Exception e) {
+								}
 								executeByteControlWrite(item.getId(), iValue);
 								item.setValue(iValue);
 							}
@@ -397,7 +464,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 						}).show();
 	}
 
-	private IListItem findItem(int position) {
+	private IListItem findItemByPosition(int position) {
 		if (position < mSpinnedList.size()) {
 			return mSpinnedList.get(position);
 		} else {
@@ -405,7 +472,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 	}
 
-	private IListItem findItemInSpinned(int position) {
+	private IListItem findItemInSpinnedByPosition(int position) {
 		if (position < mSpinnedList.size()) {
 			return mSpinnedList.get(position);
 		} else {
@@ -413,7 +480,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 	}
 
-	private IListItem findItemInList(int position) {
+	private IListItem findItemInListByPosition(int position) {
 		if (position < mSpinnedList.size()) {
 			return null;
 		} else {
@@ -428,7 +495,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		Log.d(TAG, "current long click item = " + _position);
 		final int position = _position;
-		final IListItem item = findItem(position);
+		final IListItem item = findItemByPosition(position);
 		if (item != null) {
 			showRenameDialog(item);
 			mAdapter.notifyDataSetChanged();
@@ -445,7 +512,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		}
 		Log.d(TAG, "current click item = " + _position);
 		final int position = _position;
-		final IListItem item = findItem(position);
+		final IListItem item = findItemByPosition(position);
 		if (item != null) {
 			final int v = item.getValue();
 			final int addr = item.getId();
@@ -489,24 +556,50 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		refreshPaging();
 	}
 
-	private void removeFromSpinnedList(IListItem item) {
-		if (mSpinnedList.isEmpty())
-			return;
-		if (true) {
-			for (IListItem i : mSpinnedList) {
-				if (i.getId() == item.getId()
-						&& i.getTitle().equalsIgnoreCase(item.getTitle())) {
-					mSpinnedList.remove(i);
+	private void appendToList(IListItem item, List<IListItem> list) {
+		if (list.isEmpty()) {
+			list.add(item);
+		} else if (list.get(0).getId() > item.getId()) {
+			list.add(0, item);
+		} else if (list.get(list.size() - 1).getId() < item.getId()) {
+			list.add(item);
+		} else {
+			int i;
+			for (i = 0; i < list.size(); i++) {
+				if (list.get(i).getId() > item.getId()) {
+					list.add(i, item);
 					break;
 				}
 			}
-		} else {
-			mSpinnedList.remove(item);
 		}
 	}
 
+	private void removeFromList(IListItem item, List<IListItem> list) {
+		if (list.isEmpty())
+			return;
+		for (IListItem i : list) {
+			if (i.getId() == item.getId()
+					&& i.getTitle().equalsIgnoreCase(item.getTitle())) {
+				list.remove(i);
+				break;
+			}
+		}
+	}
+
+	private void removeFromSpinnedList(IListItem item) {
+		removeFromList(item, mSpinnedList);
+	}
+
 	private void appendToSpinnedList(IListItem item) {
-		mSpinnedList.add(item);
+		appendToList(item, mSpinnedList);
+	}
+
+	private void removeFromList(IListItem item) {
+		removeFromList(item, mList);
+	}
+
+	private void appendToList(IListItem item) {
+		appendToList(item, mList);
 	}
 
 	@Override
@@ -682,7 +775,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 	private boolean viewCanVisible(int position) {
 		if (position >= mSpinnedList.size()) {
-			IListItem item = findItemInList(position);
+			IListItem item = findItemInListByPosition(position);
 			if (item != null) {
 				for (IListItem i : mSpinnedList) {
 					if (i.getId() == item.getId()
@@ -721,7 +814,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 
 		@Override
 		public IListItem getItem(int position) {
-			return findItem(position);
+			return findItemByPosition(position);
 		}
 
 		@Override
@@ -729,8 +822,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			if (position < mSpinnedList.size()) {
 				return mSpinnedList.get(position).getItemId();
 			} else {
-				return mList.get(position - mSpinnedList.size()).getItemId()
-						+ mSpinnedList.size();
+				return mList.get(position - mSpinnedList.size()).getItemId();
 			}
 		}
 
@@ -747,7 +839,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 					@Override
 					public void onClick(View v) {
 						int pos = Integer.parseInt(v.getTag().toString());
-						onListItemClick(null, v, pos + 1, 0);
+						onListItemLongClick(null, v, pos + 1, 0);
 					}
 				});
 				holder.title = (TextView) view
@@ -756,7 +848,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 					@Override
 					public void onClick(View v) {
 						int pos = Integer.parseInt(v.getTag().toString());
-						onListItemClick(null, v, pos + 1, 0);
+						onListItemLongClick(null, v, pos + 1, 0);
 					}
 				});
 				holder.notes = (TextView) view
@@ -785,6 +877,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 							btn.setText("¹Ì¶¨");
 							item.setSpinned(false);
 							removeFromSpinnedList(item);
+							appendToList(item);
 						} else {
 							RegisterDB r = new RegisterDB();
 							r.setId(0);
@@ -796,6 +889,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 									r);
 							btn.setText("È¡Ïû");
 							item.setSpinned(true);
+							removeFromList(item);
 							appendToSpinnedList(item);
 						}
 						mAdapter.notifyDataSetChanged();
@@ -821,8 +915,15 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				holder.status.setVisibility(View.VISIBLE);
 			} else {
 				long ul = item.getValue();
-				holder.statusText.setText(Long.toString(ul));
+				holder.statusText.setText(String.format("        %-6d", ul));
 				holder.statusText.setVisibility(View.VISIBLE);
+				holder.statusText.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						int pos = Integer.parseInt(v.getTag().toString());
+						onListItemClick(null, v, pos + 1, 0);
+					}
+				});
 			}
 			holder.notes.setVisibility(View.GONE);
 			if (item.isSpinned()) {
@@ -833,19 +934,18 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			holder.icon.setTag(position);
 			holder.title.setTag(position);
 			holder.status.setTag(position);
+			holder.statusText.setTag(position);
 			holder.spin.setVisibility(View.VISIBLE);
 			holder.spin.setTag(position);
-			if (!viewCanVisible(position)) {
-				LayoutParams linearParams = view.getLayoutParams();
-				linearParams.height = 1;
-				view.setLayoutParams(linearParams);
-				view.setVisibility(View.GONE);
-			} else {
-				LayoutParams linearParams = view.getLayoutParams();
-				linearParams.height = holder.viewHeight;
-				view.setLayoutParams(linearParams);
-				view.setVisibility(View.VISIBLE);
-			}
+			/*
+			 * if (!viewCanVisible(position)) { LayoutParams linearParams =
+			 * view.getLayoutParams(); linearParams.height = 1;
+			 * view.setLayoutParams(linearParams);
+			 * view.setVisibility(View.GONE); } else { LayoutParams linearParams
+			 * = view.getLayoutParams(); linearParams.height =
+			 * holder.viewHeight; view.setLayoutParams(linearParams);
+			 * view.setVisibility(View.VISIBLE); }
+			 */
 			return view;
 		}
 	}
