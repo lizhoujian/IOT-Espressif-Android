@@ -589,13 +589,20 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements
 	 */
 	protected abstract void executeFinish(int command, boolean result);
 
+	protected void executePost(final IEspDeviceStatus status,
+			boolean showWaitingDialog) {
+		DeviceTask task = new DeviceTask(this);
+		task.setShowWaitingDialog(showWaitingDialog);
+		task.execute(status);
+	}
+
 	/**
 	 * Post the status
 	 * 
 	 * @param status
 	 */
 	protected void executePost(final IEspDeviceStatus status) {
-		new DeviceTask(this).execute(status);
+		executePost(status, true);
 	}
 
 	/**
@@ -612,6 +619,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements
 		private ProgressDialog mDialog;
 
 		private int mCommand;
+		private boolean showWaitingDialog = true;
+
+		protected void setShowWaitingDialog(boolean show) {
+			showWaitingDialog = show;
+		}
 
 		public DeviceTask(Activity activity) {
 			mActivity = activity;
@@ -621,7 +633,9 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements
 		protected void onPreExecute() {
 			executePrepare();
 
-			showDialog();
+			if (showWaitingDialog) {
+				showDialog();
+			}
 		}
 
 		@Override
@@ -647,7 +661,9 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements
 		@Override
 		protected void onPostExecute(Boolean result) {
 			log.debug("DeviceTask result = " + result);
-			releaseDialog();
+			if (showWaitingDialog) {
+				releaseDialog();
+			}
 
 			executeFinish(mCommand, result);
 		}

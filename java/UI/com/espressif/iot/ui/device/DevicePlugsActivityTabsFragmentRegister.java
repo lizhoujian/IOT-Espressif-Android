@@ -1,7 +1,9 @@
 package com.espressif.iot.ui.device;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import android.app.Activity;
@@ -13,6 +15,7 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
@@ -58,6 +61,10 @@ interface IListItem {
 	void setSpinned(boolean spinned);
 
 	boolean isSpinned();
+
+	void setSynced(boolean synced);
+
+	boolean synced();
 }
 
 class RegListItem implements IListItem {
@@ -66,6 +73,7 @@ class RegListItem implements IListItem {
 	String title;
 	int v;
 	boolean spinned;
+	boolean synced;
 
 	RegListItem() {
 		setId(0);
@@ -122,6 +130,16 @@ class RegListItem implements IListItem {
 	@Override
 	public int getItemId() {
 		return this.itemId;
+	}
+
+	@Override
+	public void setSynced(boolean synced) {
+		this.synced = synced;
+	}
+
+	@Override
+	public boolean synced() {
+		return this.synced;
 	}
 }
 
@@ -187,9 +205,17 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			String v;
 			switch (msg.what) {
 			case Fx2nControl.REQUEST_CONTROL:
-				v = (String) msg.obj;
+				Map<String, Object> o = (Map<String, Object>) msg.obj;
+				v = o.get("value").toString();
+				boolean isSpinned = Boolean.valueOf(o.get("isSpinned")
+						.toString());
 				if (!v.isEmpty()) {
-					parseRegValues(v);
+					if (!isSpinned) {
+						parseRegValues(v);
+					} else {
+						int addr = Integer.parseInt(o.get("addr").toString());
+						parseRegValuesForSpinned(addr, v);
+					}
 				}
 				break;
 			case Fx2nControl.REQUEST_PLC_REGISTER_COUNT:
@@ -203,6 +229,12 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			super.handleMessage(msg);
 		}
 	};
+
+	private TextView txtAddrType;
+
+	private EditText editTextAddrType;
+
+	private Button btnAddrTypeAddr;
 
 	private int findRegIndexByType(int type) {
 		for (int i = 0; i < Fx2nControl.addrTypeValues.length; i++) {
@@ -276,6 +308,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		int addr = 0;
 		int i;
 		int startLoc;
+		IListItem spinnedItem;
 
 		if (bits == null) {
 			Log.e(TAG, "parseRegValuesBit bits is null.");
@@ -323,13 +356,17 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				+ ", leftRows=" + leftRows);
 
 		for (i = startLoc; i < leftRows; i++) {
-			if (findItemInSpinnedByAddr(addr) == null) {
+			spinnedItem = findItemInSpinnedByAddr(addr);
+			if (spinnedItem == null) {
 				IListItem item = new RegListItem(addr);
 				item.setItemId(addr);
 				item.setTitle(getItemName(addr, addrType));
 				item.setValue(bits[i] ? 1 : 0);
 				item.setSpinned(getIsSpinned(addr, addrType));
+				item.setSynced(true);
 				mList.add(item);
+			} else {
+				spinnedItem.setValue(bits[i] ? 1 : 0);
 			}
 			addr++;
 		}
@@ -345,6 +382,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		int addr = 0;
 		int[] values = Fx2nControl.hexStringToInt(regValues, mByteLen);
 		int startLoc;
+		IListItem spinnedItem;
 
 		if (values == null) {
 			Log.e(TAG, "parseRegValuesByte values is null.");
@@ -391,13 +429,17 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				+ ", leftRows=" + leftRows);
 
 		for (i = startLoc; i < leftRows; i++) {
-			if (findItemInSpinnedByAddr(addr) == null) {
+			spinnedItem = findItemInSpinnedByAddr(addr);
+			if (spinnedItem == null) {
 				IListItem item = new RegListItem(addr);
 				item.setItemId(addr);
 				item.setTitle(getItemName(addr, addrType));
 				item.setValue(values[i]);
 				item.setSpinned(getIsSpinned(addr, addrType));
+				item.setSynced(true);
 				mList.add(item);
+			} else {
+				spinnedItem.setValue(values[i]);
 			}
 			addr++;
 		}
@@ -535,7 +577,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		return mSpinnedList.size() % countPerPage;
 	}
 
-	private void loadSpinnedList() {
+	private void loadSpinnedListFromDB() {
 		mSpinnedList.clear();
 		int i = 0;
 		List<RegisterDB> list = IOTRegisterDBManager.getInstance()
@@ -549,11 +591,100 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 					item.setTitle(getItemName(addr, addrType));
 					item.setValue(0);
 					item.setSpinned(getIsSpinned(addr, addrType));
+					item.setSynced(false);
 					mSpinnedList.add(item);
 				}
 			}
 		}
 		refreshPaging();
+	}
+
+	private int findFirstNeedAddr() {
+		if (mSpinnedList.isEmpty())
+			return -1;
+		for (IListItem i : mSpinnedList) {
+			if (!i.synced()) {
+				return i.getId();
+			}
+		}
+		return -1;
+	}
+
+	private int calcStartInByte(int addr) {
+		int start;
+		if (mBitMode) {
+			start = addr / 8;
+		} else {
+			start = addr;
+		}
+		return start;
+	}
+
+	private void refreshSpinnedListValues() {
+		int addr = findFirstNeedAddr();
+		if (addr >= 0) {
+			int byteStart = calcStartInByte(addr);
+			executeByteControlReadForSpinned(addr, byteStart,
+					Math.min(countPerPage, regBitCount));
+		}
+	}
+
+	private void parseRegBitForSpinned(int addr, String v) {
+		boolean changed = false;
+		boolean[] bits = Fx2nControl.bytesToBits(Fx2nControl
+				.hexStringToBytes(v));
+		int addrStart = addr - addr % 8;
+		int addrEnd = addrStart + bits.length;
+
+		Log.d(TAG, "syncBit start addr=" + addr + ", v=" + v);
+
+		for (IListItem item : mSpinnedList) {
+			if (!item.synced()
+					&& (item.getId() >= addrStart && item.getId() < addrEnd)) {
+				item.setValue(bits[item.getId() - addrStart] ? 1 : 0);
+				item.setSynced(true);
+				changed = true;
+				Log.d(TAG,
+						"syncBit addr=" + item.getId() + ", value="
+								+ item.getValue());
+			}
+		}
+		if (changed) {
+			mAdapter.notifyDataSetChanged();
+		}
+	}
+
+	private void parseRegByteForSpinned(int addr, String v) {
+		boolean changed = false;
+		int[] values = Fx2nControl.hexStringToInt(v, mByteLen);
+		int addrStart = addr;
+		int addrEnd = addrStart + values.length;
+
+		Log.d(TAG, "syncByte start addr=" + addr + ", v=" + v);
+
+		for (IListItem item : mSpinnedList) {
+			if (!item.synced()
+					&& (item.getId() >= addrStart && item.getId() < addrEnd)) {
+				item.setValue(values[item.getId() - addrStart]);
+				item.setSynced(true);
+				changed = true;
+				Log.d(TAG,
+						"syncByte addr=" + item.getId() + ", value="
+								+ item.getValue());
+			}
+		}
+		if (changed) {
+			mAdapter.notifyDataSetChanged();
+		}
+	}
+
+	private void parseRegValuesForSpinned(int addr, String v) {
+		if (mBitMode) {
+			parseRegBitForSpinned(addr, v);
+		} else {
+			parseRegByteForSpinned(addr, v);
+		}
+		refreshSpinnedListValues();
 	}
 
 	private void appendToList(IListItem item, List<IListItem> list) {
@@ -602,6 +733,49 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		appendToList(item, mList);
 	}
 
+	private void addItemToList(int id, List<IListItem> list, int value,
+			boolean isSpinned) {
+		int addr = id;
+		IListItem item = new RegListItem(addr);
+		item.setItemId(addr);
+		item.setTitle(getItemName(addr, addrType));
+		item.setValue(mBitMode ? (value != 0 ? 1 : 0) : value);
+		item.setSpinned(isSpinned);
+		list.add(item);
+	}
+
+	private void saveItemToDB(int id, boolean isSpinned) {
+		RegisterDB r = new RegisterDB();
+		r.setId(0);
+		r.setRegType(addrType);
+		r.setRegAddr(id);
+		r.setRegName("");
+		r.setIsSpinned(isSpinned);
+		IOTRegisterDBManager.getInstance().insertOrReplace(r);
+	}
+
+	private void appendToSpinnedListByManual(int id) {
+		int i;
+		boolean exist = false;
+		for (i = 0; i < mSpinnedList.size(); i++) {
+			if (mSpinnedList.get(i).getId() == id) {
+				exist = true;
+				break;
+			}
+		}
+		if (!exist) {
+			saveItemToDB(id, true);
+			addItemToList(id, mSpinnedList, 0, true);
+			for (i = 0; i < mList.size(); i++) {
+				if (mList.get(i).getId() == id) {
+					mList.remove(i);
+					break;
+				}
+			}
+			mAdapter.notifyDataSetChanged();
+		}
+	}
+
 	@Override
 	protected void onCreateViewLazy(Bundle savedInstanceState) {
 		super.onCreateViewLazy(savedInstanceState);
@@ -618,6 +792,32 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		} else {
 			mBitMode = true;
 		}
+
+		txtAddrType = (TextView) findViewById(R.id.txtAddrType);
+		txtAddrType.setText("¹Ì¶¨¼Ä´æÆ÷£º" + addrTypeName);
+		editTextAddrType = (EditText) findViewById(R.id.editTextAddrType);
+		editTextAddrType.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+					editTextAddrType.setHint("");
+				} else {
+					editTextAddrType.setHint("ÇëÊäÈë¼Ä´æÆ÷±àºÅ.");
+				}
+			}
+		});
+
+		btnAddrTypeAddr = (Button) findViewById(R.id.btnAddrTypeAddr);
+		btnAddrTypeAddr.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				String value = editTextAddrType.getText().toString().trim();
+				if (!value.isEmpty()) {
+					int i = Integer.parseInt(value);
+					appendToSpinnedListByManual(i);
+				}
+			}
+		});
 
 		txtMsg = (TextView) findViewById(R.id.txtDesc);
 
@@ -707,12 +907,14 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				executeByteControlRead(0, countPerPage);
 			}
 		}, 10);
-		new Thread(new Runnable() {
+		handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				loadSpinnedList();
+				loadSpinnedListFromDB();
+				refreshSpinnedListValues();
+				mAdapter.notifyDataSetChanged();
 			}
-		}).start();
+		}, 20);
 	}
 
 	private void executeRegisterCountGet() {
@@ -729,19 +931,48 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		IEspStatusPlugs status = new EspStatusPlugs();
 		status.setControlParam("control", onoff ? Fx2nControl.CMD_FORCE_ON
 				: Fx2nControl.CMD_FORCE_OFF, bitAddrType, bitAddr, "", 0);
+		Map<String, Object> tag = new HashMap<String, Object>();
+		tag.put("addr", addr);
+		status.setTag(tag);
 		executePost(status);
 	}
 
+	private void executeByteControlReadForSpinned(int addr, int byteStart,
+			int rows) {
+		Map<String, Object> tag = new HashMap<String, Object>();
+		tag.put("addr", addr);
+		tag.put("byteStart", byteStart);
+		tag.put("rows", rows);
+		tag.put("isWrite", false);
+		tag.put("isSpinned", true);
+		executeByteControl(byteStart, rows, false, 0, tag, false);
+	}
+
 	private void executeByteControlRead(int addr, int rows) {
-		executeByteControl(addr, rows, false, 0);
+		Map<String, Object> tag = new HashMap<String, Object>();
+		tag.put("addr", addr);
+		tag.put("rows", rows);
+		tag.put("isWrite", false);
+		tag.put("isSpinned", false);
+		executeByteControl(addr, rows, false, 0, tag);
 	}
 
 	private void executeByteControlWrite(int addr, int writeValue) {
-		executeByteControl(addr, 1, true, writeValue);
+		Map<String, Object> tag = new HashMap<String, Object>();
+		tag.put("addr", addr);
+		tag.put("rows", 1);
+		tag.put("isWrite", true);
+		tag.put("isSpinned", false);
+		executeByteControl(addr, 1, true, writeValue, tag);
 	}
 
 	private void executeByteControl(int addr, int count, boolean isWrite,
-			int writeValue) {
+			int writeValue, Map tag) {
+		executeByteControl(addr, count, isWrite, writeValue, tag, true);
+	}
+
+	private void executeByteControl(int addr, int count, boolean isWrite,
+			int writeValue, Map tag, boolean showWaitingDialog) {
 		int byteAddrType = addrType;
 		int byteAddr = addr;
 		int byteWriteValue = writeValue;
@@ -765,7 +996,8 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		status.setControlParam("control", isWrite ? Fx2nControl.CMD_WRITE
 				: Fx2nControl.CMD_READ, byteAddrType, byteAddr, hexString,
 				byteLen);
-		executePost(status);
+		status.setTag(tag);
+		executePost(status, showWaitingDialog);
 	}
 
 	@Override
@@ -903,8 +1135,10 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			}
 
 			IListItem item = getItem(position);
-			holder.icon
-					.setBackgroundResource(R.drawable.esp_icon_plugs_aperture);
+			if (holder.icon != null) {
+				holder.icon
+						.setBackgroundResource(R.drawable.esp_icon_plugs_aperture);
+			}
 			holder.title.setText(item.getTitle().isEmpty() ? addrTypeName
 					+ item.getId() : item.getTitle() + "(" + addrTypeName
 					+ item.getId() + ")");

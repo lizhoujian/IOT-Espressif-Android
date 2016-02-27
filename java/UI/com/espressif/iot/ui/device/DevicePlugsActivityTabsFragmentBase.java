@@ -22,10 +22,14 @@ public abstract class DevicePlugsActivityTabsFragmentBase extends LazyFragment {
 		this.daa = daa;
 	}
 
-	public void executePost(IEspStatusPlugs status) {
+	public void executePost(IEspStatusPlugs status, boolean showWaitingDialog) {
 		Fx2nControl.setHandler(handler);
 		daa.setCurrentFragment(this);
-		daa.executePost(status);
+		daa.executePost(status, showWaitingDialog);
+	}
+
+	public void executePost(IEspStatusPlugs status) {
+		executePost(status, true);
 	}
 
 	public void setHandler(Handler handler) {

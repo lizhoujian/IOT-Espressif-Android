@@ -1,6 +1,7 @@
 package com.espressif.iot.type.device.status;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import android.os.Handler;
@@ -20,6 +21,8 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 	private int result;
 
 	private Handler handler;
+
+	private Map tag = null;
 
 	public EspStatusPlugs() {
 		mApertureList = new Vector<IAperture>();
@@ -138,6 +141,16 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable {
 	@Override
 	public Handler getHandler() {
 		return this.handler;
+	}
+
+	@Override
+	public void setTag(Map map) {
+		this.tag = map;
+	}
+
+	@Override
+	public Map getTag() {
+		return this.tag;
 	}
 
 }

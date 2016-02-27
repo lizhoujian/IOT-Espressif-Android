@@ -1,6 +1,8 @@
 package com.espressif.iot.ui.device;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import android.os.Handler;
 
@@ -68,8 +70,13 @@ public final class Fx2nControl {
 				if (action.equalsIgnoreCase("control")
 						&& status.getCmd() == CMD_READ
 						&& status.getResult() > 0) {
+					Map<String, Object> tag = status.getTag();
+					if (tag == null) {
+						tag = new HashMap<String, Object>();
+					}
+					tag.put("value", status.getValue());
 					handler.sendMessage(handler.obtainMessage(
-							Fx2nControl.REQUEST_CONTROL, status.getValue()));
+							Fx2nControl.REQUEST_CONTROL, tag));
 				} else if (action.equalsIgnoreCase("lan_ip")) {
 					handler.sendMessage(handler.obtainMessage(
 							Fx2nControl.REQUEST_LAN_IP, status.getValue()));
@@ -165,19 +172,20 @@ public final class Fx2nControl {
 	private static byte charToByte(char c) {
 		return (byte) "0123456789ABCDEF".indexOf(c);
 	}
-//
-//	public final static byte[] hexStringToBytes(String hexString) {
-//		if (hexString == null || hexString.equals("")) {
-//			return null;
-//		}
-//		int length = hexString.length() / 2;
-//		byte[] d = new byte[length];
-//		for (int i = 0; i < length; i++) {
-//			int pos = i * 2;
-//			d[i] = Byte.decode("0x" + hexString.substring(pos, pos + 2));
-//		}
-//		return d;
-//	}
+
+	//
+	// public final static byte[] hexStringToBytes(String hexString) {
+	// if (hexString == null || hexString.equals("")) {
+	// return null;
+	// }
+	// int length = hexString.length() / 2;
+	// byte[] d = new byte[length];
+	// for (int i = 0; i < length; i++) {
+	// int pos = i * 2;
+	// d[i] = Byte.decode("0x" + hexString.substring(pos, pos + 2));
+	// }
+	// return d;
+	// }
 
 	public final static boolean[] bytesToBits(byte[] bytes) {
 		boolean[] retValues = new boolean[bytes.length * 8];

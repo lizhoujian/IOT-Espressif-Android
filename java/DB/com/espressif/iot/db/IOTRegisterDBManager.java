@@ -94,7 +94,8 @@ public class IOTRegisterDBManager implements IRegisterDBManager,
 		Query<RegisterDB> query = registerDao
 				.queryBuilder()
 				.where(Properties.RegType.eq(regType),
-						Properties.IsSpinned.eq(true)).build();
+						Properties.IsSpinned.eq(true))
+				.orderAsc(Properties.RegAddr).build();
 		List<RegisterDB> results = query.list();
 		if (results != null && results.size() > 0) {
 			log.debug(Thread.currentThread().toString()

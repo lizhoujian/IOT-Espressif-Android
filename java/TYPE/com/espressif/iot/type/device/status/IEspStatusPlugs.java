@@ -1,6 +1,8 @@
 package com.espressif.iot.type.device.status;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.os.Handler;
 
@@ -114,4 +116,7 @@ public interface IEspStatusPlugs extends IEspDeviceStatus {
 	public void setHandler(Handler handler);
 
 	public Handler getHandler();
+
+	public void setTag(Map map);
+	public Map getTag();
 }
