@@ -4,7 +4,10 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="10dip" >
+        android:paddingLeft="10dip"
+        android:paddingRight="10dip"
+        android:paddingTop="5dip"
+        android:paddingBottom="5dip" >
 
     <ImageView
         android:id="@+id/aperture_icon"
@@ -42,9 +45,12 @@
     <TextView
         android:id="@+id/aperture_status_text"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+	<TextView
+        android:id="@+id/text_hold_space"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
-
+        android:text="   " />
     <ImageView
         android:id="@+id/btn_spin"
         android:layout_width="wrap_content"

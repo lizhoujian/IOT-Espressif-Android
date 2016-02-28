@@ -9,6 +9,7 @@ import java.util.Vector;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.DateUtils;
@@ -288,6 +289,9 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	private void removeOutItemFromList() {
 		int id;
 		int index;
+		if (mList.isEmpty()) {
+			return;
+		}
 		for (;;) {
 			index = mList.size() - 1;
 			id = mList.get(index).getId();
@@ -888,7 +892,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				onListItemClick(parent, view, position, id);
+				//onListItemClick(parent, view, position, id);
 			}
 		});
 		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -896,7 +900,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				onListItemLongClick(parent, view, position, id);
+				//onListItemLongClick(parent, view, position, id);
 				return true;
 			}
 		});
@@ -1163,8 +1167,11 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			holder.notes.setVisibility(View.GONE);
 			if (item.isSpinned()) {
 				holder.spin.setBackgroundResource(R.drawable.spin);
+				view.setBackgroundColor(Color.LTGRAY);
 			} else {
 				holder.spin.setBackgroundResource(R.drawable.unspin);
+				view.setBackgroundColor(Color.WHITE);
+				
 			}
 			holder.icon.setTag(position);
 			holder.title.setTag(position);
