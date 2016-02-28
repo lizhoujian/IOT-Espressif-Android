@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -484,6 +485,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 	private void showEditDialog(final IListItem item) {
 		final EditText nameEdit = new EditText(daa);
 		nameEdit.setSingleLine();
+		nameEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
 		nameEdit.setText(Integer.toString(item.getValue()));
 		LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.WRAP_CONTENT);

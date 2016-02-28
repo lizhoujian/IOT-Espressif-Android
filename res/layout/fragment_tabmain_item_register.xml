@@ -31,7 +31,8 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="请输入寄存器编号."
-                android:inputType="number" >
+                android:inputType="number"
+            	android:textAppearance="?android:attr/textAppearanceMedium" >
             </EditText>
 
             <Button
