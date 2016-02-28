@@ -22,7 +22,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical|center_horizontal"
                 android:text=" 固定寄存器"
-                android:textSize="25dp" />
+                android:textSize="30px" />
 
             <EditText
                 android:id="@+id/editTextAddrType"

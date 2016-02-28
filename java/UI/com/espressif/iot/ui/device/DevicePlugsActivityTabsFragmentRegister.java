@@ -486,7 +486,10 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		nameEdit.setLayoutParams(lp);
 		new AlertDialog.Builder(daa)
 				.setView(nameEdit)
-				.setTitle(item.getTitle())
+				.setTitle(
+						"修改寄存器"
+								+ (!item.getTitle().trim().isEmpty() ? "("
+										+ item.getTitle() + ")" : ""))
 				.setPositiveButton(android.R.string.ok,
 						new DialogInterface.OnClickListener() {
 							@Override
@@ -1027,8 +1030,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 		TextView notes;
 		ImageView status;
 		TextView statusText;
-		Button spin;
-		int viewHeight;
+		ImageView spin;
 	}
 
 	private class ListAdapter extends BaseAdapter {
@@ -1096,17 +1098,17 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 				});
 				holder.statusText = (TextView) view
 						.findViewById(R.id.aperture_status_text);
-				holder.spin = (Button) view.findViewById(R.id.btn_spin);
+				holder.spin = (ImageView) view.findViewById(R.id.btn_spin);
 				holder.spin.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						Button btn = (Button) v;
+						ImageView btn = (ImageView) v;
 						int pos = Integer.parseInt(v.getTag().toString());
 						IListItem item = getItem(pos);
 						if (item.isSpinned()) {
 							IOTRegisterDBManager.getInstance().delete(addrType,
 									item.getId(), true);
-							btn.setText("固定");
+							btn.setBackgroundResource(R.drawable.spin);
 							item.setSpinned(false);
 							removeFromSpinnedList(item);
 							appendToList(item);
@@ -1119,7 +1121,7 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 							r.setIsSpinned(true);
 							IOTRegisterDBManager.getInstance().insertOrReplace(
 									r);
-							btn.setText("取消");
+							btn.setBackgroundResource(R.drawable.unspin);
 							item.setSpinned(true);
 							removeFromList(item);
 							appendToSpinnedList(item);
@@ -1127,7 +1129,6 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 						mAdapter.notifyDataSetChanged();
 					}
 				});
-				holder.viewHeight = view.getLayoutParams().height;
 				view.setTag(holder);
 			} else {
 				view = convertView;
@@ -1161,9 +1162,9 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			}
 			holder.notes.setVisibility(View.GONE);
 			if (item.isSpinned()) {
-				holder.spin.setText("取消");
+				holder.spin.setBackgroundResource(R.drawable.spin);
 			} else {
-				holder.spin.setText("固定");
+				holder.spin.setBackgroundResource(R.drawable.unspin);
 			}
 			holder.icon.setTag(position);
 			holder.title.setTag(position);
@@ -1171,15 +1172,6 @@ public class DevicePlugsActivityTabsFragmentRegister extends
 			holder.statusText.setTag(position);
 			holder.spin.setVisibility(View.VISIBLE);
 			holder.spin.setTag(position);
-			/*
-			 * if (!viewCanVisible(position)) { LayoutParams linearParams =
-			 * view.getLayoutParams(); linearParams.height = 1;
-			 * view.setLayoutParams(linearParams);
-			 * view.setVisibility(View.GONE); } else { LayoutParams linearParams
-			 * = view.getLayoutParams(); linearParams.height =
-			 * holder.viewHeight; view.setLayoutParams(linearParams);
-			 * view.setVisibility(View.VISIBLE); }
-			 */
 			return view;
 		}
 	}

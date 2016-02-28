@@ -45,11 +45,11 @@
         android:layout_height="wrap_content"
         android:visibility="gone" />
 
-    <Button
+    <ImageView
         android:id="@+id/btn_spin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="固定"
+        android:background="@drawable/spin"
         android:visibility="gone" />
 
 </LinearLayout>
