@@ -62,14 +62,19 @@ public class EspCommandPlugsGetStatusLocal implements
 	private IEspStatusPlugs parseControlResponse(JSONObject resultJSON) {
 		IEspStatusPlugs plugsStatus = new EspStatusPlugs();
 		try {
-			int result = resultJSON.getInt("result");
-			if (result > 0) {
-				String value = "";
-				if (resultJSON.has("value"))
-					value = resultJSON.getString("value");
-				plugsStatus.setValue(value);
+			if (resultJSON != null) {
+				int result = resultJSON.getInt("result");
+				if (result > 0) {
+					String value = "";
+					if (resultJSON.has("value"))
+						value = resultJSON.getString("value");
+					plugsStatus.setValue(value);
+				}
+				plugsStatus.setResult(result);
+			} else {
+				plugsStatus.setValue("");
+				plugsStatus.setResult(0);
 			}
-			plugsStatus.setResult(result);
 			Fx2nControl.setLastStatus(plugsStatus);
 			return plugsStatus;
 		} catch (JSONException e) {
@@ -98,6 +103,6 @@ public class EspCommandPlugsGetStatusLocal implements
 			return parseControlResponse(resultJSON);
 		} catch (Exception e) {
 		}
-		return null;
+		return parseControlResponse(null);
 	}
 }

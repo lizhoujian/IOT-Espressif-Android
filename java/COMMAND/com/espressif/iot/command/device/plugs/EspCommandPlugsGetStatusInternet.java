@@ -19,23 +19,28 @@ public class EspCommandPlugsGetStatusInternet implements
 		IEspCommandPlugsGetStatusInternet {
 
 	private IEspStatusPlugs parseControlResponse(JSONObject resultJSON) {
+		IEspStatusPlugs plugsStatus = new EspStatusPlugs();
 		try {
-			int status = resultJSON.getInt(Status);
-			if (status != HttpStatus.SC_OK) {
-				return null;
-			}
+			if (resultJSON != null) {
+				int status = resultJSON.getInt(Status);
+				if (status != HttpStatus.SC_OK) {
+					return null;
+				}
 
-			IEspStatusPlugs plugsStatus = new EspStatusPlugs();
-			JSONObject dataJSON = resultJSON.getJSONObject(Datapoint);
-			int x = dataJSON.getInt(X);
-			int y = dataJSON.getInt(Y);
-			String z = "";
-			if (dataJSON.has(Z)) {
-				z = dataJSON.getString(Z);
-			}
+				JSONObject dataJSON = resultJSON.getJSONObject(Datapoint);
+				int x = dataJSON.getInt(X);
+				int y = dataJSON.getInt(Y);
+				String z = "";
+				if (dataJSON.has(Z)) {
+					z = dataJSON.getString(Z);
+				}
 
-			plugsStatus.setResult(y);
-			plugsStatus.setValue(z);
+				plugsStatus.setResult(y);
+				plugsStatus.setValue(z);
+			} else {
+				plugsStatus.setResult(0);
+				plugsStatus.setValue("");
+			}
 			Fx2nControl.setLastStatus(plugsStatus);
 			return plugsStatus;
 		} catch (JSONException e) {
@@ -92,15 +97,11 @@ public class EspCommandPlugsGetStatusInternet implements
 			HeaderPair header = new HeaderPair(headerKey, headerValue);
 
 			JSONObject resultJSON = EspBaseApiUtil.Get(URL, header);
-			if (resultJSON == null) {
-				return null;
-			}
-
 			// return parsePlugsResponse(resultJSON);
 			return parseControlResponse(resultJSON);
 		} catch (Exception e) {
 		}
-		return null;
+		return parseControlResponse(null);
 	}
 
 }

@@ -29,10 +29,16 @@ public class DevicePlugsActivityTabs extends DeviceActivityAbs {
 	protected static final String TAG = "DevicePlugsActivityTabs";
 	private IndicatorViewPager indicatorViewPager;
 	private LayoutInflater inflate;
+	// private String[] names = { "系统设置", "I/O", "X", "Y", "M", "D" };
+	// private int[] namesType = { 0, Fx2nControl.REG_GPIO, Fx2nControl.REG_X,
+	// Fx2nControl.REG_Y,
+	// Fx2nControl.REG_M, Fx2nControl.REG_D };
 	private String[] names = { "系统设置", "X", "Y", "M", "D" };
 	private int[] namesType = { 0, Fx2nControl.REG_X, Fx2nControl.REG_Y,
 			Fx2nControl.REG_M, Fx2nControl.REG_D };
 	private ScrollIndicatorView indicator;
+
+	public static int currentPageId = 0;
 
 	private DevicePlugsActivityTabsFragmentBase currFragment = null;
 
@@ -95,6 +101,7 @@ public class DevicePlugsActivityTabs extends DeviceActivityAbs {
 							int currentItem) {
 						Log.d(TAG, "onIndicatorPageChange, currentItem = "
 								+ currentItem);
+						currentPageId = currentItem;
 					}
 				});
 		indicator.setSplitAuto(true);
@@ -145,6 +152,8 @@ public class DevicePlugsActivityTabs extends DeviceActivityAbs {
 						DevicePlugsActivityTabsFragmentBase.INTENT_REGISTER_TYPE,
 						namesType[position]);
 			}
+			bundle.putInt(DevicePlugsActivityTabsFragmentBase.THIS_PAGE_ID,
+					position);
 			fragment.setArguments(bundle);
 			fragment.setParentActivity(getMainActivity());
 			return fragment;

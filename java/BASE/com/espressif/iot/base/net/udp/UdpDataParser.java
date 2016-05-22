@@ -30,7 +30,8 @@ public class UdpDataParser
      */
     public static boolean isValid(String data)
     {
-        return (data.matches(DEVICE_PATTERN));
+    	return (data.matches(DEVICE_PATTERN));
+    	//return false;
     }
     
     /**

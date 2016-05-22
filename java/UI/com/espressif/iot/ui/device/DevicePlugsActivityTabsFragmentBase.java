@@ -17,6 +17,7 @@ public abstract class DevicePlugsActivityTabsFragmentBase extends LazyFragment {
 	private Handler handler;
 	public static final String INTENT_INT_INDEX = "intent_int_index";
 	public static final String INTENT_REGISTER_TYPE = "intent_register_type";
+	public static final String THIS_PAGE_ID = "THIS_PAGE_ID";
 
 	public void setParentActivity(DevicePlugsActivityTabs daa) {
 		this.daa = daa;

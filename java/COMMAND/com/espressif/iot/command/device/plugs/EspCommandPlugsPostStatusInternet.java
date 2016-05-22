@@ -76,16 +76,23 @@ public class EspCommandPlugsPostStatusInternet implements
 	private void setControlResponse(IEspStatusPlugs oldstatus, JSONObject result) {
 		EspStatusPlugs status = new EspStatusPlugs();
 		JSONObject dataJSON;
+		int x = 0, y = 0;
+		String z = "";
 		try {
-			dataJSON = result.getJSONObject(Datapoint);
-			int x = dataJSON.getInt(X);
-			int y = dataJSON.getInt(Y);
-			String z = "";
-			if (dataJSON.has(Z)) {
-				z = dataJSON.getString(Z);
+			if (result != null) {
+				dataJSON = result.getJSONObject(Datapoint);
+				x = dataJSON.getInt(X);
+				y = dataJSON.getInt(Y);
+				if (dataJSON.has(Z)) {
+					z = dataJSON.getString(Z);
+				}
+				status.setResult(y);
+				status.setValue(z);
+			} else {
+				status.setResult(0xffee);
+				status.setValue("");
 			}
-			status.setResult(y);
-			status.setValue(z);
+
 			status.setAction(oldstatus.getAction());
 			status.setCmd(oldstatus.getCmd());
 			status.setAddrType(oldstatus.getAddrType());
@@ -107,14 +114,15 @@ public class EspCommandPlugsPostStatusInternet implements
 
 		String url = URL_RPC;
 		JSONObject result = EspBaseApiUtil.Get(url + params, header);
-		if (result == null) {
-			return false;
-		}
 
 		try {
-			int httpStatus = result.getInt(Status);
 			setControlResponse(status, result);
-			return httpStatus == HttpStatus.SC_OK;
+			if (result != null) {
+				int httpStatus = result.getInt(Status);
+				return httpStatus == HttpStatus.SC_OK;
+			} else {
+				return false;
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

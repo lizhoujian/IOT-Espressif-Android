@@ -70,13 +70,20 @@ public class EspCommandPlugsPostStatusLocal implements
 	private void parseControlResponse(IEspStatusPlugs oldstatus,
 			JSONObject resultJSON) {
 		EspStatusPlugs status = new EspStatusPlugs();
+		int result;
+		String value;
 		try {
-			int result = resultJSON.getInt("result");
-			if (result > 0) {
-				String value = "";
-				if (resultJSON.has("value"))
-					value = resultJSON.getString("value");
-				status.setValue(value);
+			if (resultJSON != null) {
+				result = resultJSON.getInt("result");
+				if (result > 0) {
+					value = "";
+					if (resultJSON.has("value"))
+						value = resultJSON.getString("value");
+					status.setValue(value);
+				}
+			} else {
+				result = 0xffee;
+				status.setValue("");
 			}
 			status.setCmd(oldstatus.getCmd());
 			status.setAddrType(oldstatus.getAddrType());

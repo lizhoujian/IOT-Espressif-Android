@@ -29,6 +29,8 @@ public final class Fx2nControl {
 	public final static int REG_CV32 = 16;
 	public final static int REG_DS = 17;
 
+	public final static int REG_GPIO = 0xff;
+
 	public final static int CMD_FORCE_ON = 7;
 	public final static int CMD_FORCE_OFF = 8;
 	public final static int CMD_READ = 0;
@@ -39,15 +41,20 @@ public final class Fx2nControl {
 	public final static int REQUEST_SERIAL_SWITCH = 12;
 	public final static int REQUEST_PLC_RUN_STOP = 13;
 	public final static int REQUEST_PLC_REGISTER_COUNT = 14;
+
+	public final static int REQUEST_GPIO_COUNT = 15;
+	public final static int REQUEST_GPIO_STATUS_GET = 16;
+	public final static int REQUEST_GPIO_STATUS_SET = 17;
+
 	public final static String[] addrTypeitems = { "X", "Y", "S", "T", "C",
-			"D", "D*", "M", "M*", "TV16", "CV16", "CV32" };
+			"D", "D*", "M", "M*", "TV16", "CV16", "CV32", "I/O" };
 	public final static int[] addrTypeValues = { Fx2nControl.REG_X,
 			Fx2nControl.REG_Y, Fx2nControl.REG_S, Fx2nControl.REG_T,
 			Fx2nControl.REG_C, Fx2nControl.REG_D, Fx2nControl.REG_DS,
 			Fx2nControl.REG_M, Fx2nControl.REG_MS, Fx2nControl.REG_TV16,
-			Fx2nControl.REG_CV16, Fx2nControl.REG_CV32 };
+			Fx2nControl.REG_CV16, Fx2nControl.REG_CV32, Fx2nControl.REG_GPIO };
 	public final static int[] addrTypeValueLen = { 1, 1, 1, 1, 1, 2, 2, 1, 1,
-			2, 2, 4 };
+			2, 2, 4, 1 };
 
 	public static IEspStatusPlugs lastStatus = null;
 
@@ -94,6 +101,22 @@ public final class Fx2nControl {
 					handler.sendMessage(handler.obtainMessage(
 							Fx2nControl.REQUEST_PLC_REGISTER_COUNT,
 							status.getValue()));
+				} else if (action.equalsIgnoreCase("gpio_count")) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_GPIO_COUNT, status.getValue()));
+				} else if (action.equalsIgnoreCase("gpio_status_set")) {
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_GPIO_STATUS_SET,
+							status.getValue()));
+				} else if (action.equalsIgnoreCase("gpio_status_get")
+						&& status.getResult() > 0) {
+					Map<String, Object> tag = status.getTag();
+					if (tag == null) {
+						tag = new HashMap<String, Object>();
+					}
+					tag.put("value", status.getValue());
+					handler.sendMessage(handler.obtainMessage(
+							Fx2nControl.REQUEST_GPIO_STATUS_GET, tag));
 				}
 			}
 		}

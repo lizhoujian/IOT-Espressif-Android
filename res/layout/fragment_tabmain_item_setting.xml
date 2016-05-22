@@ -27,14 +27,13 @@
             android:layout_height="wrap_content"
             android:text="PLC串口连接PC"
             android:width="200dp" />
-
         <Button
             android:id="@+id/btnRunStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PLC已启动"
-            android:width="200dp" />
-
+            android:width="200dp"
+            android:visibility="gone"/>"
         <Button
             android:id="@+id/btnLanIP"
             android:layout_width="wrap_content"

@@ -11,7 +11,7 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingLeft="10dp"
             android:paddingRight="10dp" >
@@ -21,25 +21,43 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical|center_horizontal"
-                android:text=" 固定寄存器"
-                android:textSize="30px" />
+                android:text=" 固定" />
 
             <EditText
                 android:id="@+id/editTextAddrType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ems="10"
-                android:hint="请输入寄存器编号."
+                android:ems="8"
+                android:hint="输入编号"
                 android:inputType="number"
-            	android:textAppearance="?android:attr/textAppearanceMedium" >
+                android:textAppearance="?android:attr/textAppearanceMedium" >
             </EditText>
 
             <Button
                 android:id="@+id/btnAddrTypeAddr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="添加" />
+                android:text="固定" />
+
+            <Button
+                android:id="@+id/btnRefreshTimeSub"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="-" />
+
+            <TextView
+                android:id="@+id/txtRefreshTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|center_vertical|center_horizontal"
+                android:text="5秒刷新" />
+
+            <Button
+                android:id="@+id/btnRefreshTimeAdd"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="+" />
 
         </LinearLayout>
 
@@ -85,7 +103,8 @@
                 android:layout_gravity="bottom"
                 android:text="加载完毕" />
         </LinearLayout>
-    </com.handmark.pulltorefresh.library.PullToRefreshScrollView>-->
+    </com.handmark.pulltorefresh.library.PullToRefreshScrollView>
+            -->
 
         </LinearLayout>
     </LinearLayout>
